@@ -5,13 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using static Phone_Scraper.Scraper;
 
 namespace Phone_Scraper
 {
-    public Scraper(IWebDriver webDriver)
+    public class Scraper : IWebsiteScraper
     {
         private IWebDriver driver;
-            driver = webDriver;
 
         // Define your Regex patterns
         private static readonly Regex phoneRegex = new Regex(@"(\+?[1-9][0-9]{0,2}[\s\(\)\-\.\,\/\|]*)?(\(?\d{3}\)?[\s\-\.\,\/\|]*\d{3}[\s\-\.\,\/\|]*\d{4})");
@@ -19,9 +19,10 @@ namespace Phone_Scraper
         private static readonly Regex addressRegex = new Regex(@"\d{1,5}\s\w+\s\w*(?:\s\w+)?\s(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Dr|Rd|Blvd|Ln|St)\.?");
         private static readonly Regex urlRegex = new Regex(@"https?:\/\/\S+");
 
-        public Scraper()
+        public Scraper(IWebDriver webDriver)
         {
             driver = new ChromeDriver();  // Make sure the ChromeDriver is in your system's PATH
+            driver = webDriver;
         }
 
         public interface IWebsiteScraper
@@ -31,15 +32,54 @@ namespace Phone_Scraper
 
         public async Task<PhonebookEntry> Scrape(string url)
         {
-            // Fetch the page HTML using HtmlWeb
-            var web = new HtmlWeb();
-            var doc = web.Load(url);
+            var entry = new PhonebookEntry();
+            try
+            {
+                // Navigate to the URL
+                driver.Navigate().GoToUrl(url);
 
-            // Use HtmlAgilityPack and XPath to extract data
-            // These XPaths are hypothetical; you'll need to determine the actual ones based on your target page's structure
-            var nameNode = doc.DocumentNode.SelectSingleNode("//div[@class='name']");
-            var phoneNode = doc.DocumentNode.SelectSingleNode("//div[@class='phone']");
-            var addressNode = doc.DocumentNode.SelectSingleNode("//div[@class='address']");
+                // Wait and ensure the page loads with Selenium or JavaScript Executor if needed
+
+                // Fetch the page HTML using HtmlWeb or Selenium's PageSource
+                var web = new HtmlWeb();
+                var doc = web.Load(driver.PageSource);
+
+                // Use HtmlAgilityPack and XPath to extract data
+                var nameNode = doc.DocumentNode.SelectSingleNode("//div[@class='name']");
+                var phoneNode = doc.DocumentNode.SelectSingleNode("//div[@class='phone']");
+                var addressNode = doc.DocumentNode.SelectSingleNode("//div[@class='address']");
+
+                // Extracting data using the found nodes
+                entry.Name = nameNode?.InnerText.Trim();
+                entry.PrimaryPhone = phoneNode?.InnerText.Trim();
+                entry.PrimaryAddress = addressNode?.InnerText.Trim();
+                entry.AdditionalPhones = new List<string>(); // Fill this as needed
+                entry.AdditionalAddresses = new List<string>(); // Fill this as needed
+                entry.Comments = string.Empty; // Placeholder for comments
+
+                // Optionally: Use Regex to extract information from the page source
+                // E.g., string pageSource = driver.PageSource or doc.DocumentNode.InnerHtml
+                // Then match with your Regex
+
+            }
+            catch (Exception e)
+            {
+                // Handle or log exception
+                Console.WriteLine($"Error occurred: {e.Message}");
+            }
+            finally
+            {
+                driver.Quit(); // Ensure resources are released
+            }
+
+            return entry; // Return the constructed entry
+        }
+    }
+
+    public interface IWebsiteScraper
+    {
+        Task<PhonebookEntry> Scrape(string url);
+    }
 
             var entry = new PhonebookEntry
             {
