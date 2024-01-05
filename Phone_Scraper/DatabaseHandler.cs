@@ -51,6 +51,9 @@ namespace Phone_Scraper
         {
             try
             {
+                // Ensure the schema is up-to-date
+                UpdateSchema();
+
                 using var connection = new SqliteConnection(connectionString);
                 await connection.OpenAsync();
                 using var command = connection.CreateCommand();
@@ -58,7 +61,7 @@ namespace Phone_Scraper
             INSERT INTO PhonebookEntries (Name, PrimaryPhone, PrimaryAddress, Comments, RandomCharacters)
             VALUES ($name, $phone, $address, $comments, $randomCharacters)";
 
-                // Ensure that null values are handled as DBNull.Value
+                // Bind the parameters
                 command.Parameters.AddWithValue("$name", entry.Name ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$phone", entry.PrimaryPhone ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$address", entry.PrimaryAddress ?? (object)DBNull.Value);
