@@ -9,6 +9,12 @@ using static Phone_Scraper.Scraper;
 
 namespace Phone_Scraper
 {
+    // Ensure IWebsiteScraper is defined in the same or accessible namespace
+    public interface IWebsiteScraper
+    {
+        Task<PhonebookEntry> Scrape(string url);
+    }
+
     public class Scraper : IWebsiteScraper
     {
         private IWebDriver driver;
@@ -21,50 +27,40 @@ namespace Phone_Scraper
 
         public Scraper(IWebDriver webDriver)
         {
-            driver = new ChromeDriver();  // Make sure the ChromeDriver is in your system's PATH
-            driver = webDriver;
-        }
-
-        public interface IWebsiteScraper
-        {
-            Task<PhonebookEntry> Scrape(string url);
+            //driver = webDriver ?? throw new ArgumentNullException(nameof(webDriver));
+            // Initialize the WebDriver here (e.g., ChromeDriver)
+            driver = new ChromeDriver();
         }
 
         public async Task<PhonebookEntry> Scrape(string url)
         {
             var entry = new PhonebookEntry();
+
             try
             {
-                // Navigate to the URL
                 driver.Navigate().GoToUrl(url);
+                // Implement appropriate wait here (implicit, explicit, or FluentWait)
 
-                // Wait and ensure the page loads with Selenium or JavaScript Executor if needed
+                var doc = new HtmlWeb().Load(driver.PageSource);
 
-                // Fetch the page HTML using HtmlWeb or Selenium's PageSource
-                var web = new HtmlWeb();
-                var doc = web.Load(driver.PageSource);
-
-                // Use HtmlAgilityPack and XPath to extract data
+                // Extract primary details using XPath
                 var nameNode = doc.DocumentNode.SelectSingleNode("//div[@class='name']");
                 var phoneNode = doc.DocumentNode.SelectSingleNode("//div[@class='phone']");
                 var addressNode = doc.DocumentNode.SelectSingleNode("//div[@class='address']");
 
-                // Extracting data using the found nodes
+                // Assign primary details to entry
                 entry.Name = nameNode?.InnerText.Trim();
                 entry.PrimaryPhone = phoneNode?.InnerText.Trim();
                 entry.PrimaryAddress = addressNode?.InnerText.Trim();
-                entry.AdditionalPhones = new List<string>(); // Fill this as needed
-                entry.AdditionalAddresses = new List<string>(); // Fill this as needed
-                entry.Comments = string.Empty; // Placeholder for comments
+                entry.AdditionalPhones = new List<string>();
+                entry.AdditionalAddresses = new List<string>();
+                entry.Comments = string.Empty;
 
-                // Optionally: Use Regex to extract information from the page source
-                // E.g., string pageSource = driver.PageSource or doc.DocumentNode.InnerHtml
-                // Then match with your Regex
-
+                // Extract additional details using the private method
+                ExtractAdditionalDetails(doc.DocumentNode.InnerHtml, entry);
             }
             catch (Exception e)
             {
-                // Handle or log exception
                 Console.WriteLine($"Error occurred: {e.Message}");
             }
             finally
@@ -72,38 +68,63 @@ namespace Phone_Scraper
                 driver.Quit(); // Ensure resources are released
             }
 
-            return entry; // Return the constructed entry
+            return entry;
+        }
+
+        private void ExtractAdditionalDetails(string pageSource, PhonebookEntry entry)
+        {
+            // Extracting additional phone numbers
+            var phoneMatches = phoneRegex.Matches(pageSource);
+            foreach (Match match in phoneMatches)
+            {
+                var phone = match.Value.Trim();
+                if (!string.IsNullOrEmpty(phone) && !entry.AdditionalPhones.Contains(phone))
+                {
+                    entry.AdditionalPhones.Add(phone);
+                }
+            }
+
+
+            // Extracting additional names, if necessary
+            var nameMatches = nameRegex.Matches(pageSource);
+            foreach (Match match in nameMatches)
+            {
+                var name = match.Groups[2].Value.Trim();
+                if (!string.IsNullOrEmpty(name) && name != entry.Name)
+                {
+                    // Add to comments or as additional names
+                    entry.Comments += name + "; "; // Customize as needed
+                }
+            }
+
+            // Extracting additional addresses
+            var addressMatches = addressRegex.Matches(pageSource);
+            foreach (Match match in addressMatches)
+            {
+                var address = match.Value.Trim();
+                if (!string.IsNullOrEmpty(address) && !entry.AdditionalAddresses.Contains(address))
+                {
+                    entry.AdditionalAddresses.Add(address);
+                }
+            }
         }
     }
+}
 
-    public interface IWebsiteScraper
+ /*   public interface IWebsiteScraper
     {
         Task<PhonebookEntry> Scrape(string url);
     }
 
-            var entry = new PhonebookEntry
-            {
-                Name = nameNode?.InnerText.Trim(),
-                PrimaryPhone = phoneNode?.InnerText.Trim(),
-                PrimaryAddress = addressNode?.InnerText.Trim(),
-                AdditionalPhones = new List<string>(), // Logic to fill this
-                AdditionalAddresses = new List<string>(), // Logic to fill this
-                Comments = string.Empty // Placeholder for comments
-
-
-            };
-
-            // Example of using Regex within Scrape method
-            string pageSource = doc.DocumentNode.InnerHtml;
-            var phoneMatch = phoneRegex.Match(pageSource);
-            var nameMatch = nameRegex.Match(pageSource);
-            var addressMatch = addressRegex.Match(pageSource);
-            var urlMatch = urlRegex.Match(pageSource);
-
-
-            // TODO: Logic to handle additional phone numbers, addresses, and duplicate entries
-
-            return new PhonebookEntry(); // Constructed with the extracted data
-        }
-    }
+    // Define PhonebookEntry class here or in a separate file as you have it
+        public class PhonebookEntry
+{
+        public string Name { get; set; }
+        public string PrimaryPhone { get; set; }
+        public string PrimaryAddress { get; set; }
+        public List<string> AdditionalPhones { get; set; }
+        public List<string> AdditionalAddresses { get; set; }
+        public string Comments { get; set; }
+        // Add other properties or methods as necessary
 }
+ */
