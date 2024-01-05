@@ -11,7 +11,7 @@ namespace Phone_Scraper
         public string Name { get; set; }
         public string PrimaryPhone { get; set; }
         public string PrimaryAddress { get; set; }
-        public string Reletives { get; set; }
+       // public string Reletives { get; set; }
         public List<string> AdditionalPhones { get; set; }
         public List<string> AdditionalAddresses { get; set; }
         public string Comments { get; set; }

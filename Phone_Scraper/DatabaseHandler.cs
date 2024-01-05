@@ -113,6 +113,31 @@ namespace Phone_Scraper
             }
         }
 
+        public void UpdateSchema()
+        {
+            try
+            {
+                using var connection = new SqliteConnection(connectionString);
+                connection.Open();
+                using var command = connection.CreateCommand();
+                command.CommandText = @"
+                  ALTER TABLE PhonebookEntries
+                  ADD COLUMN RandomCharacters TEXT;
+                  ";
+                command.ExecuteNonQuery();
+            }
+            catch (SqliteException ex)
+            {
+                Console.WriteLine($"SQLite Error: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"General Error: {ex.Message}");
+                throw;
+            }
+        }
+
         // Add more methods as necessary for database operations
     }
 }
