@@ -57,7 +57,7 @@ namespace Phone_Scraper
                 entry.Comments = string.Empty;
 
                 // Extract additional details using the private method
-                ExtractAdditionalDetails(doc.DocumentNode.InnerHtml, entry);
+                await ExtractAdditionalDetails(doc.DocumentNode.InnerHtml, entry);
             }
             catch (Exception e)
             {
