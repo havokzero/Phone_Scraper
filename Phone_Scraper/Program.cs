@@ -29,10 +29,10 @@ namespace Phone_Scraper
             var urlsToCrawl = new Queue<string>();
 
             // Add the initial URLs to start crawling
-            urlsToCrawl.Enqueue("https://www.usphonebook.com/john-mcdonald/U3YTM3cTN0gTMxcTN3MTM2kTM50yR");     // Ther should only be one entry point into the website.
-           // urlsToCrawl.Enqueue("https://www.usphonebook.com/john-mcdonald/UzYDMwUzNzkzM3kDN4QjMyUzNx0yR");
-           // urlsToCrawl.Enqueue("https://www.usphonebook.com/linda-mcdonald/UwEjM0gDMzYzN1gzM4ITN0IzM20yR");
-           // urlsToCrawl.Enqueue("https://www.usphonebook.com/david-sharpe/UMDO4MzNyQTM5YDMxUDN3gTOzEzR");
+            urlsToCrawl.Enqueue("https://www.usphonebook.com/john-mcdonald/U3YTM3cTN0gTMxcTN3MTM2kTM50yR");
+            urlsToCrawl.Enqueue("https://www.usphonebook.com/john-mcdonald/UzYDMwUzNzkzM3kDN4QjMyUzNx0yR");
+            urlsToCrawl.Enqueue("https://www.usphonebook.com/linda-mcdonald/UwEjM0gDMzYzN1gzM4ITN0IzM20yR");
+            urlsToCrawl.Enqueue("https://www.usphonebook.com/david-sharpe/UMDO4MzNyQTM5YDMxUDN3gTOzEzR");
 
             while (urlsToCrawl.Any())
             {

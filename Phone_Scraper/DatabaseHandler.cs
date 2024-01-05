@@ -123,10 +123,40 @@ namespace Phone_Scraper
                 using var connection = new SqliteConnection(connectionString);
                 connection.Open();
                 using var command = connection.CreateCommand();
+
+                // Step 1: Create a backup table with the existing data
                 command.CommandText = @"
-                  ALTER TABLE PhonebookEntries
-                  ADD COLUMN RandomCharacters TEXT;
-                  ";
+            CREATE TABLE IF NOT EXISTS PhonebookEntries_backup AS
+            SELECT * FROM PhonebookEntries;
+        ";
+                command.ExecuteNonQuery();
+
+                // Step 2: Drop the original table
+                command.CommandText = "DROP TABLE IF EXISTS PhonebookEntries;";
+                command.ExecuteNonQuery();
+
+                // Step 3: Create a new table with the updated schema
+                command.CommandText = @"
+            CREATE TABLE IF NOT EXISTS PhonebookEntries (
+                Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                Name TEXT,
+                PrimaryPhone TEXT,
+                PrimaryAddress TEXT,
+                Comments TEXT,
+                RandomCharacters TEXT
+            );
+        ";
+                command.ExecuteNonQuery();
+
+                // Step 4: Copy data from the backup table to the new table
+                command.CommandText = @"
+            INSERT INTO PhonebookEntries (Id, Name, PrimaryPhone, PrimaryAddress, Comments, RandomCharacters)
+            SELECT Id, Name, PrimaryPhone, PrimaryAddress, Comments, RandomCharacters FROM PhonebookEntries_backup;
+        ";
+                command.ExecuteNonQuery();
+
+                // Drop the backup table
+                command.CommandText = "DROP TABLE IF EXISTS PhonebookEntries_backup;";
                 command.ExecuteNonQuery();
             }
             catch (SqliteException ex)
