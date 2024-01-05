@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
@@ -44,6 +45,25 @@ namespace Phone_Scraper
 
                 // Extract and process information from the page
                 PhonebookEntry phonebookEntry = await scraper.Scrape(currentUrl);
+
+                // Initialize a new HttpClient for each HTTP request
+                using (var httpClient = new HttpClient())
+                {
+                    HttpResponseMessage response = await httpClient.GetAsync("https://example.com");
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        // Process the response content here (replace with your logic)
+                        string responseBody = await response.Content.ReadAsStringAsync();
+
+                        // Use the response data as needed in your scraping logic
+                    }
+                    else
+                    {
+                        // Handle the case when the request was not successful
+                        Console.WriteLine($"HTTP request failed with status code {response.StatusCode}");
+                    }
+                }
 
                 // Initialize the database handler
                 var dbHandler = new DatabaseHandler("Database/phonebook.db"); // Correct path to the database file
