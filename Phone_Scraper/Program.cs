@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using Phone_Scraper;
-using SQLitePCL;
 
 namespace Phone_Scraper
 {
@@ -18,17 +16,11 @@ namespace Phone_Scraper
         {
             string driverPath = Path.Combine(Directory.GetCurrentDirectory(), "Driver");
 
-            // Initialize SQLitePCL.raw
-            Batteries.Init();
-
             // Set up the Chrome WebDriver
             var driver = new ChromeDriver(driverPath);
 
             // Initialize the scraper with the driver
             var scraper = new Scraper(driver);
-
-            // Create a single HttpClient instance to reuse
-            var httpClient = new HttpClient();
 
             // Define the base URL
             string baseUrl = "https://www.usphonebook.com/";
@@ -36,9 +28,11 @@ namespace Phone_Scraper
             // List to store URLs to be crawled
             var urlsToCrawl = new Queue<string>();
 
-            // Add the initial URL to start crawling
-            string startingUrl = "https://www.usphonebook.com"; // Change this to your desired starting URL
-            urlsToCrawl.Enqueue(startingUrl);
+            // Add the initial URLs to start crawling
+            urlsToCrawl.Enqueue("https://www.usphonebook.com/john-mcdonald/U3YTM3cTN0gTMxcTN3MTM2kTM50yR");     // Ther should only be one entry point into the website.
+           // urlsToCrawl.Enqueue("https://www.usphonebook.com/john-mcdonald/UzYDMwUzNzkzM3kDN4QjMyUzNx0yR");
+           // urlsToCrawl.Enqueue("https://www.usphonebook.com/linda-mcdonald/UwEjM0gDMzYzN1gzM4ITN0IzM20yR");
+           // urlsToCrawl.Enqueue("https://www.usphonebook.com/david-sharpe/UMDO4MzNyQTM5YDMxUDN3gTOzEzR");
 
             while (urlsToCrawl.Any())
             {
@@ -77,9 +71,6 @@ namespace Phone_Scraper
 
             // Close the driver once done
             driver.Quit();
-
-            // Dispose of the HttpClient
-            httpClient.Dispose();
         }
     }
 }

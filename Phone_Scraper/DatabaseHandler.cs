@@ -40,7 +40,8 @@ namespace Phone_Scraper
                 Name TEXT,
                 PrimaryPhone TEXT,
                 PrimaryAddress TEXT,
-                Comments TEXT
+                Comments TEXT,
+                RandomCharacters TEXT
             );
             ";
             command.ExecuteNonQuery();
@@ -54,14 +55,15 @@ namespace Phone_Scraper
                 await connection.OpenAsync();
                 using var command = connection.CreateCommand();
                 command.CommandText = @"
-            INSERT INTO PhonebookEntries (Name, PrimaryPhone, PrimaryAddress, Comments)
-            VALUES ($name, $phone, $address, $comments)";
+            INSERT INTO PhonebookEntries (Name, PrimaryPhone, PrimaryAddress, Comments, RandomCharacters)
+            VALUES ($name, $phone, $address, $comments, $randomCharacters)";
 
                 // Ensure that null values are handled as DBNull.Value
                 command.Parameters.AddWithValue("$name", entry.Name ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$phone", entry.PrimaryPhone ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$address", entry.PrimaryAddress ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$comments", entry.Comments ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("$randomCharacters", entry.RandomCharacters ?? (object)DBNull.Value);
 
                 await command.ExecuteNonQueryAsync();
             }
@@ -85,8 +87,8 @@ namespace Phone_Scraper
                 await connection.OpenAsync();
                 using var transaction = connection.BeginTransaction();
                 var command = connection.CreateCommand();
-                command.CommandText = @"INSERT INTO PhonebookEntries (Name, PrimaryPhone, PrimaryAddress, Comments)
-                            VALUES ($name, $phone, $address, $comments)";
+                command.CommandText = @"INSERT INTO PhonebookEntries (Name, PrimaryPhone, PrimaryAddress, Comments, RandomCharacters)
+                            VALUES ($name, $phone, $address, $comments, $randomCharacters)";
                 foreach (var entry in entries)
                 {
                     command.Parameters.Clear();
@@ -94,6 +96,7 @@ namespace Phone_Scraper
                     command.Parameters.AddWithValue("$phone", entry.PrimaryPhone);
                     command.Parameters.AddWithValue("$address", entry.PrimaryAddress);
                     command.Parameters.AddWithValue("$comments", entry.Comments);
+                    command.Parameters.AddWithValue("$randomCharacters", entry.RandomCharacters);
                     await command.ExecuteNonQueryAsync();
                 }
                 await transaction.CommitAsync();

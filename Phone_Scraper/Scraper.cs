@@ -27,9 +27,8 @@ namespace Phone_Scraper
 
         public Scraper(IWebDriver webDriver)
         {
-            //driver = webDriver ?? throw new ArgumentNullException(nameof(webDriver));
             // Initialize the WebDriver here (e.g., ChromeDriver)
-            driver = new ChromeDriver();
+            driver = webDriver ?? throw new ArgumentNullException(nameof(webDriver));
         }
 
         public async Task<PhonebookEntry> Scrape(string url)
@@ -38,10 +37,21 @@ namespace Phone_Scraper
 
             try
             {
-                driver.Navigate().GoToUrl(url);
-                // Implement appropriate wait here (implicit, explicit, or FluentWait)
+                // Use an async GoToUrl method
+                await Task.Run(() => driver.Navigate().GoToUrl(url));
 
                 var doc = new HtmlWeb().Load(driver.PageSource);
+                var urlSegments = new Uri(url).Segments;
+                if (urlSegments.Length >= 3)
+                {
+                    // The name is usually the segment at index 1, and the random characters at index 2
+                    string name = urlSegments[1].Trim('/');
+                    string randomCharacters = urlSegments[2].Trim('/');
+
+                    // Assign name and random characters to entry
+                    entry.Name = name;
+                    entry.RandomCharacters = randomCharacters;
+                }
 
                 // Extract primary details using XPath
                 var nameNode = doc.DocumentNode.SelectSingleNode("//div[@class='name']");
@@ -52,12 +62,13 @@ namespace Phone_Scraper
                 entry.Name = nameNode?.InnerText.Trim();
                 entry.PrimaryPhone = phoneNode?.InnerText.Trim();
                 entry.PrimaryAddress = addressNode?.InnerText.Trim();
+                // Initialize additional details
                 entry.AdditionalPhones = new List<string>();
                 entry.AdditionalAddresses = new List<string>();
                 entry.Comments = string.Empty;
 
                 // Extract additional details using the private method
-                await ExtractAdditionalDetails(doc.DocumentNode.InnerHtml, entry);
+                await ExtractAdditionalDetailsAsync(doc.DocumentNode.InnerHtml, entry);
             }
             catch (Exception e)
             {
@@ -71,7 +82,7 @@ namespace Phone_Scraper
             return entry;
         }
 
-        private void ExtractAdditionalDetails(string pageSource, PhonebookEntry entry)
+        private async Task ExtractAdditionalDetailsAsync(string pageSource, PhonebookEntry entry)
         {
             // Extracting additional phone numbers
             var phoneMatches = phoneRegex.Matches(pageSource);
@@ -83,7 +94,6 @@ namespace Phone_Scraper
                     entry.AdditionalPhones.Add(phone);
                 }
             }
-
 
             // Extracting additional names, if necessary
             var nameMatches = nameRegex.Matches(pageSource);
@@ -110,21 +120,3 @@ namespace Phone_Scraper
         }
     }
 }
-
- /*   public interface IWebsiteScraper
-    {
-        Task<PhonebookEntry> Scrape(string url);
-    }
-
-    // Define PhonebookEntry class here or in a separate file as you have it
-        public class PhonebookEntry
-{
-        public string Name { get; set; }
-        public string PrimaryPhone { get; set; }
-        public string PrimaryAddress { get; set; }
-        public List<string> AdditionalPhones { get; set; }
-        public List<string> AdditionalAddresses { get; set; }
-        public string Comments { get; set; }
-        // Add other properties or methods as necessary
-}
- */
