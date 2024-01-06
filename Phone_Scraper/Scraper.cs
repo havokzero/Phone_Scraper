@@ -9,6 +9,8 @@ using static Phone_Scraper.Scraper;
 using Phone_Scraper.Utility;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace Phone_Scraper
 {
@@ -36,6 +38,13 @@ namespace Phone_Scraper
         public Scraper(IWebDriver webDriver)
         {
             driver = webDriver ?? throw new ArgumentNullException(nameof(webDriver));
+        }
+
+        // Method to close or dispose of the WebDriver
+        public void CloseDriver()
+        {
+            // If the driver is not null, close and dispose of it
+            driver?.Quit();
         }
 
         private async Task<string> MakeHttpRequest(string requestUri)
@@ -110,22 +119,31 @@ namespace Phone_Scraper
             }
         }
 
+        public static List<string> GetSeedURLs(string filePath)
+        {
+            string json = File.ReadAllText(filePath);
+            var seedUrls = JsonConvert.DeserializeObject<List<string>>(json);
+            return seedUrls;
+        }
 
         public async Task StartScraping(IEnumerable<string> seedUrls)
         {
-            WebClient client = CloudflareEvader.CreateBypassedWebClient("Https://usphonebook.com/");
+            WebClient client = CloudEvader.CreateBypassedWebClient("https://usphonebook.com/");
             if (client == null)
             {
-                Console.WriteLine("Failed to create a bypassed WebClient. Cloudflare might have blocked the request, or there might be an issue with the CloudflareEvader.");
+                Console.WriteLine("Failed to bypass Cloudflare.");
+                // Consider adding retry logic or exit
                 return;
             }
+            
             try
             {
-                client = CloudflareEvader.CreateBypassedWebClient("Https://usphonebook.com/");
+                // Attempt to bypass Cloudflare for the main page
+                client = CloudEvader.CreateBypassedWebClient("https://usphonebook.com/");
                 if (client == null)
                 {
-                    Console.WriteLine("Cloudflare bypass failed. WebClient is null.");
-                    return; // Exit if the client is not correctly initialized
+                    Console.WriteLine("Failed to create a bypassed WebClient. Cloudflare might have blocked the request, or there might be an issue with the CloudflareEvader.");
+                    return;
                 }
             }
             catch (Exception ex)
@@ -133,9 +151,10 @@ namespace Phone_Scraper
                 Console.WriteLine($"Error initializing Cloudflare bypass: {ex.Message}");
                 return; // Exit if there's an error during initialization
             }
+
             Console.WriteLine("Solved! We're clear to go");
 
-            // Iterate through the seed URLs
+            // Load seed URLs and iterate through them
             foreach (var seedUrl in seedUrls)
             {
                 urlsToCrawl.Enqueue(seedUrl);
@@ -160,22 +179,48 @@ namespace Phone_Scraper
                     string baseUrl = "https://www.usphonebook.com/{0}-{1}/{2}";
                     string url = string.Format(baseUrl, firstname, lastname, uniqueid);
 
-                    // Use URL variable in the HTTP request or the scraping logic
-                    string responseContent = await client.DownloadStringTaskAsync(url);
-
-                    if (!string.IsNullOrEmpty(responseContent))
+                    try
                     {
-                        Console.WriteLine(responseContent); // Process responses as they come
-                    }
+                        // Use URL variable in the HTTP request or the scraping logic
+                        string responseContent = await client.DownloadStringTaskAsync(url);
+                        if (!string.IsNullOrEmpty(responseContent))
+                        {
+                            Console.WriteLine(responseContent); // Process responses as they come
+                        }
 
-                    await Scrape(currentUrl); // Scrape the current URL
-                    ExtractLinks(currentUrl); // Extract new links from the current page and add them to the queue
+                        // Scrape the current URL and Extract new links from the current page and add them to the queue
+                        await Scrape(currentUrl);
+                        ExtractLinks(currentUrl); // Ensure ExtractLinks method is properly handling the URLs and adding new ones to the queue
+                    }
+                    catch (WebException ex)
+                    {
+                        // Handle specific web exceptions or retry logic here if needed
+                        Console.WriteLine($"Failed to access {url}: {ex.Message}");
+                    }
                 }
             }
-            driver.Quit();
+            driver.Quit(); // Ensure this is the desired behavior as this will close the entire browser session
         }
 
-
+        // Dummy method to detect Cloudflare's challenge
+        private bool IsCloudflareChallenge(WebException webEx)
+        {
+            // Implement actual logic to detect Cloudflare's challenge page
+            // This could involve checking for specific status codes, page content, etc.
+            if (webEx.Response is HttpWebResponse response)
+            {
+                // Often Cloudflare challenge pages are served with a 503 Service Unavailable
+                if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
+                {
+                    // Further checks can be made here, for instance, parsing the response HTML
+                    // and looking for specific Cloudflare challenge indicators.
+                    // For now, it's a basic check.
+                    return true;
+                }
+            }
+            return false;
+        }
+                        
         public async Task<PhonebookEntry> Scrape(string url)
         {
             var entry = new PhonebookEntry();
