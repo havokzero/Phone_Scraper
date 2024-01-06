@@ -128,8 +128,8 @@ namespace Phone_Scraper
 
         public async Task StartScraping(IEnumerable<string> seedUrls)
         {
-            WebClient client = CloudEvader.CreateBypassedWebClient("https://usphonebook.com/");
-            if (client == null)
+            HttpClient httpClient = await CloudEvader.CreateBypassedWebClient("https://usphonebook.com/");
+            if (httpClient == null)
             {
                 Console.WriteLine("Failed to bypass Cloudflare.");
                 // Consider adding retry logic or exit
@@ -139,8 +139,8 @@ namespace Phone_Scraper
             try
             {
                 // Attempt to bypass Cloudflare for the main page
-                client = CloudEvader.CreateBypassedWebClient("https://usphonebook.com/");
-                if (client == null)
+                httpClient = await CloudEvader.CreateBypassedWebClient("https://usphonebook.com/");
+                if (httpClient == null)
                 {
                     Console.WriteLine("Failed to create a bypassed WebClient. Cloudflare might have blocked the request, or there might be an issue with the CloudflareEvader.");
                     return;
@@ -182,10 +182,18 @@ namespace Phone_Scraper
                     try
                     {
                         // Use URL variable in the HTTP request or the scraping logic
-                        string responseContent = await client.DownloadStringTaskAsync(url);
-                        if (!string.IsNullOrEmpty(responseContent))
+                        HttpResponseMessage response = await httpClient.GetAsync(url);
+                        if (response.IsSuccessStatusCode)
                         {
-                            Console.WriteLine(responseContent); // Process responses as they come
+                            string responseContent = await response.Content.ReadAsStringAsync();
+                            if (!string.IsNullOrEmpty(responseContent))
+                            {
+                                Console.WriteLine(responseContent); // Process responses as they come
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine($"HTTP request failed with status code {response.StatusCode}");
                         }
 
                         // Scrape the current URL and Extract new links from the current page and add them to the queue
