@@ -9,15 +9,18 @@ using static Phone_Scraper.Scraper;
 
 namespace Phone_Scraper
 {
-    // Ensure IWebsiteScraper is defined in the same or accessible namespace
     public interface IWebsiteScraper
     {
+        Task StartScraping(IEnumerable<string> seedUrls);
         Task<PhonebookEntry> Scrape(string url);
     }
 
     public class Scraper : IWebsiteScraper
     {
         private IWebDriver driver;
+        private HashSet<string> visitedUrls = new HashSet<string>();
+        private Queue<string> urlsToCrawl = new Queue<string>();
+       
 
         // Define your Regex patterns
         private static readonly Regex phoneRegex = new Regex(@"(\+?[1-9][0-9]{0,2}[\s\(\)\-\.\,\/\|]*)?(\(?\d{3}\)?[\s\-\.\,\/\|]*\d{3}[\s\-\.\,\/\|]*\d{4})");
@@ -27,8 +30,30 @@ namespace Phone_Scraper
 
         public Scraper(IWebDriver webDriver)
         {
-            // Initialize the WebDriver here (e.g., ChromeDriver)
             driver = webDriver ?? throw new ArgumentNullException(nameof(webDriver));
+        }
+
+        public async Task StartScraping(IEnumerable<string> seedUrls)
+        {
+            // Enqueue the seed URLs to start the crawling process
+            foreach (var url in seedUrls)
+            {
+                urlsToCrawl.Enqueue(url);
+            }
+
+            // Continue processing until there are no more URLs to crawl
+            while (urlsToCrawl.Count > 0)
+            {
+                string currentUrl = urlsToCrawl.Dequeue();
+                if (visitedUrls.Contains(currentUrl)) continue; // Skip the URL if it's already been visited
+
+                visitedUrls.Add(currentUrl); // Mark the URL as visited
+                await Scrape(currentUrl); // Scrape the current URL
+
+                ExtractLinks(); // Extract new links from the current page and add them to the queue
+            }
+
+            driver.Quit(); // Quit the driver once done with all URLs
         }
 
         public async Task<PhonebookEntry> Scrape(string url)
@@ -37,10 +62,15 @@ namespace Phone_Scraper
 
             try
             {
-                // Use an async GoToUrl method
-                await Task.Run(() => driver.Navigate().GoToUrl(url));
+                // Navigate to the URL
+                driver.Navigate().GoToUrl(url);
 
+                // Load the page source into HtmlDocument
                 var doc = new HtmlWeb().Load(driver.PageSource);
+
+                // The rest of the scraping logic to populate the entry goes here
+
+                // For example, extracting name, phone, address, etc. from the page
                 var urlSegments = new Uri(url).Segments;
                 if (urlSegments.Length >= 3)
                 {
@@ -62,6 +92,7 @@ namespace Phone_Scraper
                 entry.Name = nameNode?.InnerText.Trim();
                 entry.PrimaryPhone = phoneNode?.InnerText.Trim();
                 entry.PrimaryAddress = addressNode?.InnerText.Trim();
+
                 // Initialize additional details
                 entry.AdditionalPhones = new List<string>();
                 entry.AdditionalAddresses = new List<string>();
@@ -72,14 +103,33 @@ namespace Phone_Scraper
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error occurred: {e.Message}");
-            }
-            finally
-            {
-                driver.Quit(); // Ensure resources are released
+                Console.WriteLine($"Error occurred while scraping {url}: {e.Message}");
             }
 
             return entry;
+        }
+
+        private void ExtractLinks()
+        {
+            try
+            {
+                var links = driver.FindElements(By.XPath("//a[contains(@href, '/')]"));
+                foreach (var link in links)
+                {
+                    string href = link.GetAttribute("href");
+                    if (href.Length > 2000) continue; // Skip overly long URLs
+
+                    string absoluteUrl = new Uri(new Uri("https://www.usphonebook.com"), href).AbsoluteUri;
+                    if (absoluteUrl.StartsWith("https://www.usphonebook.com") && !visitedUrls.Contains(absoluteUrl))
+                    {
+                        urlsToCrawl.Enqueue(absoluteUrl);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error occurred while extracting links: {e.Message}");
+            }
         }
 
         private async Task ExtractAdditionalDetailsAsync(string pageSource, PhonebookEntry entry)

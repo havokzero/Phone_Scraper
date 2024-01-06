@@ -17,86 +17,67 @@ namespace Phone_Scraper
 
         public static async Task Main(string[] args)
         {
+            // Set up the Chrome WebDriver path
             string driverPath = Path.Combine(Directory.GetCurrentDirectory(), "Driver");
 
-            // Set up the Chrome WebDriver
+            // Initialize the Chrome WebDriver
             var driver = new ChromeDriver(driverPath);
 
             // Initialize the scraper with the driver
             var scraper = new Scraper(driver);
 
-            // Define the base URL
-            string baseUrl = "https://www.usphonebook.com/";
-
-            // List to store URLs to be crawled
-            var urlsToCrawl = new Queue<string>();
-
-            // Add the initial URLs to start crawling
-            urlsToCrawl.Enqueue("https://www.usphonebook.com/john-mcdonald/U3YTM3cTN0gTMxcTN3MTM2kTM50yR");
-            urlsToCrawl.Enqueue("https://www.usphonebook.com/john-mcdonald/UzYDMwUzNzkzM3kDN4QjMyUzNx0yR");
-            urlsToCrawl.Enqueue("https://www.usphonebook.com/linda-mcdonald/UwEjM0gDMzYzN1gzM4ITN0IzM20yR");
-            urlsToCrawl.Enqueue("https://www.usphonebook.com/david-sharpe/UMDO4MzNyQTM5YDMxUDN3gTOzEzR");
-
-            while (urlsToCrawl.Any())
+            // Define the starting URLs for the scraper
+            List<string> seedUrls = new List<string>
             {
-                // Get the next URL to crawl
-                string currentUrl = urlsToCrawl.Dequeue();
+                "https://www.usphonebook.com/john-mcdonald/U3YTM3cTN0gTMxcTN3MTM2kTM50yR",
+                "https://www.usphonebook.com/john-mcdonald/UzYDMwUzNzkzM3kDN4QjMyUzNx0yR",
+                "https://www.usphonebook.com/linda-mcdonald/UwEjM0gDMzYzN1gzM4ITN0IzM20yR",
+                "https://www.usphonebook.com/david-sharpe/UMDO4MzNyQTM5YDMxUDN3gTOzEzR"
+            };
 
-                // Visit the URL
-                driver.Navigate().GoToUrl(currentUrl);
-
-                // Extract and process information from the page
-                PhonebookEntry phonebookEntry = await scraper.Scrape(currentUrl);
-
-                try
-                {
-                    // Make the HTTP request using the static HttpClient
-                    HttpResponseMessage response = await httpClient.GetAsync("https://example.com");
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        // Process the response content here (replace with your logic)
-                        string responseBody = await response.Content.ReadAsStringAsync();
-                        // Use the response data as needed in your scraping logic
-                    }
-                    else
-                    {
-                        // Handle the case when the request was not successful
-                        Console.WriteLine($"HTTP request failed with status code {response.StatusCode}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Handle any exceptions that occur during the HTTP request
-                    Console.WriteLine($"An error occurred: {ex.Message}");
-                }
-
-                // Initialize the database handler
-                var dbHandler = new DatabaseHandler("Database/phonebook.db");
-
-                // Insert the entry into the database
-                await dbHandler.InsertPhonebookEntryAsync(phonebookEntry);
-
-                // Find and add links on the current page to the queue for crawling
-                var links = driver.FindElements(By.XPath("//a[contains(@href, '/')]"));
-                foreach (var link in links)
-                {
-                    string href = link.GetAttribute("href");
-                    string absoluteUrl = new Uri(new Uri(baseUrl), href).AbsoluteUri;
-
-                    // Ensure the URL is from the same domain and not already in the queue
-                    if (absoluteUrl.StartsWith(baseUrl) && !urlsToCrawl.Contains(absoluteUrl))
-                    {
-                        urlsToCrawl.Enqueue(absoluteUrl);
-                    }
-                }
-
-                // Add a delay between crawling pages to avoid overloading the website
-                Thread.Sleep(TimeSpan.FromSeconds(1));
+            try
+            {
+                // Start the scraping process with the seed URLs
+                await scraper.StartScraping(seedUrls);
             }
+            catch (Exception e)
+            {
+                // Log any exceptions that occur during the scraping process
+                Console.WriteLine($"Error occurred in the scraping process: {e.Message}");
+            }
+            // No need for finally block to quit driver, as Scraper.cs handles it
+        }
 
-            // Close the driver once done
-            driver.Quit();
+        // A separate method for HTTP requests for better control and error handling
+        private static async Task MakeHttpRequest(string requestUri)
+        {
+            try
+            {
+                // Send an HTTP GET request
+                HttpResponseMessage response = await httpClient.GetAsync(requestUri);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Read the response body if the request was successful
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine(responseBody); // or process the response as needed
+                }
+                else
+                {
+                    // Log the status code if the request failed
+                    Console.WriteLine($"HTTP request failed with status code {response.StatusCode}");
+                }
+            }
+            catch (ObjectDisposedException ode)
+            {
+                // Log any ObjectDisposedExceptions if they occur
+                Console.WriteLine("HttpClient has been disposed: " + ode.Message);
+            }
+            catch (Exception ex)
+            {
+                // Log any other exceptions that occur
+                Console.WriteLine($"An error occurred during HTTP request: {ex.Message}");
+            }
         }
     }
 }
