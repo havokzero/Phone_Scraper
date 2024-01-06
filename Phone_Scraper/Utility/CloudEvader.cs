@@ -222,14 +222,12 @@ namespace Phone_Scraper.Utility
             return cc;
         }
     }
-
-                    /*Credit goes to  https://stackoverflow.com/questions/1777221/using-cookiecontainer-with-webclient-class
-                                (user https://stackoverflow.com/users/129124/pavel-savara) */
+                    
     public class WebClientEx : WebClient
     {
         public WebClientEx(CookieContainer container)
         {
-            this.container = container;
+            this.container = container ?? throw new ArgumentNullException(nameof(container));
         }
 
         public CookieContainer CookieContainer
