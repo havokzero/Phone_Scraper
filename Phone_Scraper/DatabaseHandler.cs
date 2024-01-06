@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.Sqlite;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -38,8 +39,14 @@ namespace Phone_Scraper
             CREATE TABLE IF NOT EXISTS PhonebookEntries (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 Name TEXT,
-                PrimaryPhone TEXT,
-                PrimaryAddress TEXT,
+                Age TEXT,
+                CurrentAddress TEXT,
+                CurrentPhone TEXT,
+                PreviousAddresses TEXT, -- This could be a JSON string or a comma-separated list
+                PreviousPhones TEXT, -- This could be a JSON string or a comma-separated list
+                Relatives TEXT, -- This could be a JSON string or a comma-separated list
+                Associates TEXT, -- This could be a JSON string or a comma-separated list
+                Email TEXT
                 Comments TEXT,
                 RandomCharacters TEXT
             );
@@ -51,20 +58,30 @@ namespace Phone_Scraper
         {
             try
             {
-                // Ensure the schema is up-to-date
-                UpdateSchema();
-
                 using var connection = new SqliteConnection(connectionString);
                 await connection.OpenAsync();
+
+                // Convert lists to JSON strings for storing
+                string previousAddresses = JsonConvert.SerializeObject(entry.PreviousAddresses);
+                string previousPhones = JsonConvert.SerializeObject(entry.PreviousPhones);
+                string relatives = JsonConvert.SerializeObject(entry.Relatives);
+                string associates = JsonConvert.SerializeObject(entry.Associates);
+
                 using var command = connection.CreateCommand();
                 command.CommandText = @"
-            INSERT INTO PhonebookEntries (Name, PrimaryPhone, PrimaryAddress, Comments, RandomCharacters)
-            VALUES ($name, $phone, $address, $comments, $randomCharacters)";
+            INSERT INTO PhonebookEntries (Name, Age, CurrentAddress, CurrentPhone, PreviousAddresses, PreviousPhones, Relatives, Associates, Email, Comments, RandomCharacters)
+            VALUES ($name, $age, $currentAddress, $currentPhone, $previousAddresses, $previousPhones, $relatives, $associates, $email, $comments, $randomCharacters)";
 
                 // Bind the parameters
                 command.Parameters.AddWithValue("$name", entry.Name ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("$phone", entry.PrimaryPhone ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("$address", entry.PrimaryAddress ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("$age", entry.Age ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("$currentAddress", entry.CurrentAddress ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("$currentPhone", entry.CurrentPhone ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("$previousAddresses", previousAddresses ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("$previousPhones", previousPhones ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("$relatives", relatives ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("$associates", associates ?? (object)DBNull.Value);
+                command.Parameters.AddWithValue("$email", entry.Email ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$comments", entry.Comments ?? (object)DBNull.Value);
                 command.Parameters.AddWithValue("$randomCharacters", entry.RandomCharacters ?? (object)DBNull.Value);
 
@@ -90,18 +107,40 @@ namespace Phone_Scraper
                 await connection.OpenAsync();
                 using var transaction = connection.BeginTransaction();
                 var command = connection.CreateCommand();
-                command.CommandText = @"INSERT INTO PhonebookEntries (Name, PrimaryPhone, PrimaryAddress, Comments, RandomCharacters)
-                            VALUES ($name, $phone, $address, $comments, $randomCharacters)";
+                command.CommandText = @"
+            INSERT INTO PhonebookEntries (
+                Name, Age, CurrentAddress, CurrentPhone, PreviousAddresses, PreviousPhones, Relatives, Associates, Email, Comments, RandomCharacters
+            ) VALUES (
+                $name, $age, $currentAddress, $currentPhone, $previousAddresses, $previousPhones, $relatives, $associates, $email, $comments, $randomCharacters
+            )";
+
                 foreach (var entry in entries)
                 {
+                    // Convert lists to JSON strings for storing
+                    string previousAddresses = JsonConvert.SerializeObject(entry.PreviousAddresses);
+                    string previousPhones = JsonConvert.SerializeObject(entry.PreviousPhones);
+                    string relatives = JsonConvert.SerializeObject(entry.Relatives);
+                    string associates = JsonConvert.SerializeObject(entry.Associates);
+
+                    // Clear previous parameters
                     command.Parameters.Clear();
-                    command.Parameters.AddWithValue("$name", entry.Name);
-                    command.Parameters.AddWithValue("$phone", entry.PrimaryPhone);
-                    command.Parameters.AddWithValue("$address", entry.PrimaryAddress);
-                    command.Parameters.AddWithValue("$comments", entry.Comments);
-                    command.Parameters.AddWithValue("$randomCharacters", entry.RandomCharacters);
+
+                    // Bind the parameters
+                    command.Parameters.AddWithValue("$name", entry.Name ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$age", entry.Age ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$currentAddress", entry.CurrentAddress ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$currentPhone", entry.CurrentPhone ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$previousAddresses", previousAddresses ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$previousPhones", previousPhones ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$relatives", relatives ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$associates", associates ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$email", entry.Email ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$comments", entry.Comments ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("$randomCharacters", entry.RandomCharacters ?? (object)DBNull.Value);
+
                     await command.ExecuteNonQueryAsync();
                 }
+
                 await transaction.CommitAsync();
             }
             catch (SqliteException ex)
@@ -140,8 +179,14 @@ namespace Phone_Scraper
             CREATE TABLE IF NOT EXISTS PhonebookEntries (
                 Id INTEGER PRIMARY KEY AUTOINCREMENT,
                 Name TEXT,
-                PrimaryPhone TEXT,
-                PrimaryAddress TEXT,
+                Age TEXT,
+                CurrentAddress TEXT,
+                CurrentPhone TEXT,
+                PreviousAddresses TEXT,
+                PreviousPhones TEXT,
+                Relatives TEXT,
+                Associates TEXT,
+                Email TEXT,
                 Comments TEXT,
                 RandomCharacters TEXT
             );
@@ -149,9 +194,10 @@ namespace Phone_Scraper
                 command.ExecuteNonQuery();
 
                 // Step 4: Copy data from the backup table to the new table
+                // Note: This step assumes all previous columns exist in the backup. If not, only copy the columns that exist.
                 command.CommandText = @"
-            INSERT INTO PhonebookEntries (Id, Name, PrimaryPhone, PrimaryAddress, Comments, RandomCharacters)
-            SELECT Id, Name, PrimaryPhone, PrimaryAddress, Comments, RandomCharacters FROM PhonebookEntries_backup;
+            INSERT INTO PhonebookEntries (Id, Name, Age, CurrentAddress, CurrentPhone, PreviousAddresses, PreviousPhones, Relatives, Associates, Email, Comments, RandomCharacters)
+            SELECT Id, Name, Age, CurrentAddress, CurrentPhone, PreviousAddresses, PreviousPhones, Relatives, Associates, Email, Comments, RandomCharacters FROM PhonebookEntries_backup;
         ";
                 command.ExecuteNonQuery();
 

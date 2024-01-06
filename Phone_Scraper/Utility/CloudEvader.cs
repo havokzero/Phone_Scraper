@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -48,6 +49,28 @@ namespace Phone_Scraper.Utility
                 return null; // Return null on error
             }
         }
+
+        public static async Task<bool> IsCloudflareChallenge(string responseContent)
+        {
+            
+            try
+            {
+                // Check if the response content contains a known Cloudflare challenge element
+                bool isChallenge = responseContent.Contains("captcha-image");
+
+                // You can add more checks here based on your specific requirements
+
+                return isChallenge;
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions here if needed
+                Console.WriteLine($"Error in IsCloudflareChallenge: {ex.Message}");
+                return false; // Return false in case of an exception
+                return responseContent.Contains("captcha-image");
+            }
+        }
+
 
         private static bool IsChallengePage(string htmlContent)
         {
@@ -135,3 +158,6 @@ namespace Phone_Scraper.Utility
         // GetAllCookiesFromHeader, ConvertCookieHeaderToArrayList, ConvertCookieArraysToCookieCollection, etc.
     }
 }
+
+
+    

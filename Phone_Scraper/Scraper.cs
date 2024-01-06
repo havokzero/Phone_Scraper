@@ -11,9 +11,11 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
 using System.IO;
+using System.Net.Http;
 
 namespace Phone_Scraper
 {
+
     public interface IWebsiteScraper
     {
         Task StartScraping(IEnumerable<string> seedUrls);
@@ -23,7 +25,7 @@ namespace Phone_Scraper
     public class Scraper : IWebsiteScraper
     {
 
-
+        private HttpClient httpClient;
         private IWebDriver driver;
         private HashSet<string> visitedUrls = new HashSet<string>();
         private Queue<string> urlsToCrawl = new Queue<string>();
@@ -33,7 +35,11 @@ namespace Phone_Scraper
         private static readonly Regex phoneRegex = new Regex(@"(\+?[1-9][0-9]{0,2}[\s\(\)\-\.\,\/\|]*)?(\(?\d{3}\)?[\s\-\.\,\/\|]*\d{3}[\s\-\.\,\/\|]*\d{4})");
         private static readonly Regex nameRegex = new Regex(@"(Name:|Name\s?:)\s?(.*?)($|\n)");
         private static readonly Regex addressRegex = new Regex(@"\d{1,5}\s\w+\s\w*(?:\s\w+)?\s(?:Avenue|Lane|Road|Boulevard|Drive|Street|Ave|Dr|Rd|Blvd|Ln|St)\.?");
-        private static readonly Regex urlRegex = new Regex(@"https?:\/\/\S+");
+        private static readonly Regex urlRegex = new Regex(@"https?:\/\/\S+", RegexOptions.IgnoreCase);
+        private static readonly Regex relativeRegex = new Regex(@"Relatives\s*:\s*(.+?)(?=<\/div>|$)");
+        private static readonly Regex associateRegex = new Regex(@"Associates\s*:\s*(.+?)(?=<\/div>|$)");
+        private static readonly Regex emailRegex = new Regex(@"^(?!\.)(""([^""\r\\]|\\[""\r\\])*""|([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)@[a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$", RegexOptions.IgnoreCase);
+
 
         public Scraper(IWebDriver webDriver)
         {
@@ -128,31 +134,8 @@ namespace Phone_Scraper
 
         public async Task StartScraping(IEnumerable<string> seedUrls)
         {
-            HttpClient httpClient = await CloudEvader.CreateBypassedWebClient("https://usphonebook.com/");
-            if (httpClient == null)
-            {
-                Console.WriteLine("Failed to bypass Cloudflare.");
-                // Consider adding retry logic or exit
-                return;
-            }
-            
-            try
-            {
-                // Attempt to bypass Cloudflare for the main page
-                httpClient = await CloudEvader.CreateBypassedWebClient("https://usphonebook.com/");
-                if (httpClient == null)
-                {
-                    Console.WriteLine("Failed to create a bypassed WebClient. Cloudflare might have blocked the request, or there might be an issue with the CloudflareEvader.");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error initializing Cloudflare bypass: {ex.Message}");
-                return; // Exit if there's an error during initialization
-            }
-
-            Console.WriteLine("Solved! We're clear to go");
+            // Initialize httpClient
+            httpClient = new HttpClient();
 
             // Load seed URLs and iterate through them
             foreach (var seedUrl in seedUrls)
@@ -182,25 +165,48 @@ namespace Phone_Scraper
                     try
                     {
                         // Use URL variable in the HTTP request or the scraping logic
-                        HttpResponseMessage response = await httpClient.GetAsync(url);
-                        if (response.IsSuccessStatusCode)
+                        string responseContent;
+
+                        // Check if Cloudflare challenge is detected
+                        bool isCloudflareChallenge = false;
+
+                        do
                         {
-                            string responseContent = await response.Content.ReadAsStringAsync();
-                            if (!string.IsNullOrEmpty(responseContent))
+                            // Make the HTTP request using a bypassed WebClient if it's a Cloudflare challenge
+                            if (isCloudflareChallenge)
                             {
-                                Console.WriteLine(responseContent); // Process responses as they come
+                                httpClient = await CloudEvader.CreateBypassedWebClient(url);
+                                if (httpClient == null)
+                                {
+                                    Console.WriteLine("Failed to create a bypassed WebClient. Cloudflare might have blocked the request, or there might be an issue with the CloudflareEvader.");
+                                    return;
+                                }
                             }
-                        }
-                        else
+
+                            // Perform the HTTP request
+                            HttpResponseMessage response = await httpClient.GetAsync(url);
+                            responseContent = await response.Content.ReadAsStringAsync();
+
+                            // Check if the response indicates a Cloudflare captcha challenge
+                            isCloudflareChallenge = await CloudEvader.IsCloudflareChallenge(responseContent);
+
+                            if (isCloudflareChallenge)
+                            {
+                                Console.WriteLine("Detected Cloudflare captcha challenge. Retrying with CloudEvader...");
+                                // Implement your retry or bypass strategy here.
+                            }
+                        } while (isCloudflareChallenge);
+
+                        if (!string.IsNullOrEmpty(responseContent))
                         {
-                            Console.WriteLine($"HTTP request failed with status code {response.StatusCode}");
+                            Console.WriteLine(responseContent); // Process responses as they come
                         }
 
                         // Scrape the current URL and Extract new links from the current page and add them to the queue
                         await Scrape(currentUrl);
                         ExtractLinks(currentUrl); // Ensure ExtractLinks method is properly handling the URLs and adding new ones to the queue
                     }
-                    catch (WebException ex)
+                    catch (HttpRequestException ex)
                     {
                         // Handle specific web exceptions or retry logic here if needed
                         Console.WriteLine($"Failed to access {url}: {ex.Message}");
@@ -228,7 +234,7 @@ namespace Phone_Scraper
             }
             return false;
         }
-                        
+
         public async Task<PhonebookEntry> Scrape(string url)
         {
             var entry = new PhonebookEntry();
@@ -239,40 +245,84 @@ namespace Phone_Scraper
                 driver.Navigate().GoToUrl(url);
 
                 // Load the page source into HtmlDocument
-                var doc = new HtmlWeb().Load(driver.PageSource);
+                var doc = new HtmlAgilityPack.HtmlDocument();
+                doc.LoadHtml(driver.PageSource);
 
-                // The rest of the scraping logic to populate the entry goes here
-
-                // For example, extracting name, phone, address, etc. from the page
-                var urlSegments = new Uri(url).Segments;
-                if (urlSegments.Length >= 3)
+                // Name and Age
+                var nameAndAgeNode = doc.DocumentNode.SelectSingleNode("//h3/span[contains(@class,'fa-user')]");
+                if (nameAndAgeNode != null)
                 {
-                    // The name is usually the segment at index 1, and the random characters at index 2
-                    string name = urlSegments[1].Trim('/');
-                    string randomCharacters = urlSegments[2].Trim('/');
-
-                    // Assign name and random characters to entry
-                    entry.Name = name;
-                    entry.RandomCharacters = randomCharacters;
+                    var nameAndAgeText = nameAndAgeNode.InnerText.Trim();
+                    // Assuming format "John Mcdonald 56 years old"
+                    var parts = nameAndAgeText.Split(new[] { ' ' }, 3); // Split by space but only into three parts
+                    if (parts.Length == 3)
+                    {
+                        entry.Name = parts[0] + " " + parts[1]; // John Mcdonald
+                                                                // Extract age from "56 years old", or similar
+                        entry.Age = parts[2].Split(' ')[0]; // 56
+                    }
                 }
 
-                // Extract primary details using XPath
-                var nameNode = doc.DocumentNode.SelectSingleNode("//div[@class='name']");
-                var phoneNode = doc.DocumentNode.SelectSingleNode("//div[@class='phone']");
-                var addressNode = doc.DocumentNode.SelectSingleNode("//div[@class='address']");
+                // Current Address
+                var currentAddressNode = doc.DocumentNode.SelectSingleNode("//p[contains(@class,'ls_contacts__text')]");
+                if (currentAddressNode != null)
+                {
+                    entry.CurrentAddress = currentAddressNode.InnerText.Trim();
+                }
 
-                // Assign primary details to entry
-                entry.Name = nameNode?.InnerText.Trim();
-                entry.PrimaryPhone = phoneNode?.InnerText.Trim();
-                entry.PrimaryAddress = addressNode?.InnerText.Trim();
+                // Current Phone Number
+                var phoneNumberNode = doc.DocumentNode.SelectSingleNode("//span[@itemprop='telephone']");
+                if (phoneNumberNode != null)
+                {
+                    entry.CurrentPhone = phoneNumberNode.InnerText.Trim();
+                }
 
-                // Initialize additional details
-                entry.AdditionalPhones = new List<string>();
-                entry.AdditionalAddresses = new List<string>();
-                entry.Comments = string.Empty;
+                // Previous Addresses
+                var prevAddressNodes = doc.DocumentNode.SelectNodes("//ul[@class='shown']/li/a");
+                if (prevAddressNodes != null)
+                {
+                    foreach (var node in prevAddressNodes)
+                    {
+                        entry.PreviousAddresses.Add(node.InnerText.Trim());
+                    }
+                }
 
-                // Extract additional details using the private method
-                await ExtractAdditionalDetailsAsync(doc.DocumentNode.InnerHtml, entry);
+                // Previous Phone Numbers
+                var prevPhoneNodes = doc.DocumentNode.SelectNodes("//ul[@class='shown']/li[contains(@itemtype, 'Person')]/a[@itemprop='telephone']");
+                if (prevPhoneNodes != null)
+                {
+                    foreach (var node in prevPhoneNodes)
+                    {
+                        entry.PreviousPhones.Add(node.InnerText.Trim());
+                    }
+                }
+
+                // Relatives
+                var relativeNodes = doc.DocumentNode.SelectNodes("//div[@class='relative-card']/p/a/span[@itemprop='name']");
+                if (relativeNodes != null)
+                {
+                    foreach (var node in relativeNodes)
+                    {
+                        entry.Relatives.Add(node.InnerText.Trim());
+                    }
+                }
+
+                // Associates
+                var associateNodes = doc.DocumentNode.SelectNodes("//div[@class='section-relative']/div[@class='relative-card']/p/a/span");
+                if (associateNodes != null)
+                {
+                    foreach (var node in associateNodes)
+                    {
+                        entry.Associates.Add(node.InnerText.Trim());
+                    }
+                }
+
+                // Email
+                var emailNode = doc.DocumentNode.SelectSingleNode("//a[contains(@href, 'mailto')]");
+                if (emailNode != null)
+                {
+                    entry.Email = emailNode.InnerText.Trim();
+                }
             }
             catch (Exception e)
             {
@@ -305,28 +355,16 @@ namespace Phone_Scraper
             }
         }
 
-        private async Task<Task> ExtractAdditionalDetailsAsync(string pageSource, PhonebookEntry entry)
+        private async Task ExtractAdditionalDetailsAsync(string pageSource, PhonebookEntry entry)
         {
             // Extracting additional phone numbers
             var phoneMatches = phoneRegex.Matches(pageSource);
             foreach (Match match in phoneMatches)
             {
                 var phone = match.Value.Trim();
-                if (!string.IsNullOrEmpty(phone) && !entry.AdditionalPhones.Contains(phone))
+                if (!string.IsNullOrEmpty(phone) && !entry.PreviousPhones.Contains(phone))
                 {
-                    entry.AdditionalPhones.Add(phone);
-                }
-            }
-
-            // Extracting additional names, if necessary
-            var nameMatches = nameRegex.Matches(pageSource);
-            foreach (Match match in nameMatches)
-            {
-                var name = match.Groups[2].Value.Trim();
-                if (!string.IsNullOrEmpty(name) && name != entry.Name)
-                {
-                    // Add to comments or as additional names
-                    entry.Comments += name + "; "; // Customize as needed
+                    entry.PreviousPhones.Add(phone);
                 }
             }
 
@@ -335,12 +373,34 @@ namespace Phone_Scraper
             foreach (Match match in addressMatches)
             {
                 var address = match.Value.Trim();
-                if (!string.IsNullOrEmpty(address) && !entry.AdditionalAddresses.Contains(address))
+                if (!string.IsNullOrEmpty(address) && !entry.PreviousAddresses.Contains(address))
                 {
-                    entry.AdditionalAddresses.Add(address);
+                    entry.PreviousAddresses.Add(address);
                 }
             }
-            return Task.CompletedTask;
+
+            // Assuming you have similar regex for relatives and associates
+            // Extracting additional relatives
+            var relativeMatches = relativeRegex.Matches(pageSource);
+            foreach (Match match in relativeMatches)
+            {
+                var relative = match.Value.Trim();
+                if (!string.IsNullOrEmpty(relative) && !entry.Relatives.Contains(relative))
+                {
+                    entry.Relatives.Add(relative);
+                }
+            }
+
+            // Extracting additional associates
+            var associateMatches = associateRegex.Matches(pageSource);
+            foreach (Match match in associateMatches)
+            {
+                var associate = match.Value.Trim();
+                if (!string.IsNullOrEmpty(associate) && !entry.Associates.Contains(associate))
+                {
+                    entry.Associates.Add(associate);
+                }
+            }
         }
     }
 }
