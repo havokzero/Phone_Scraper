@@ -1,12 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Net;
+using Phone_Scraper;
 using System.Net.Http;
+using OpenQA.Selenium;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using Phone_Scraper;
+using System.Collections.Generic;
+using Phone_Scraper.Utility;
 
 namespace Phone_Scraper
 {
@@ -28,17 +30,29 @@ namespace Phone_Scraper
 
             // Define the starting URLs for the scraper
             List<string> seedUrls = new List<string>
-            {
-                "https://www.usphonebook.com/john-mcdonald/U3YTM3cTN0gTMxcTN3MTM2kTM50yR",
-                "https://www.usphonebook.com/john-mcdonald/UzYDMwUzNzkzM3kDN4QjMyUzNx0yR",
-                "https://www.usphonebook.com/linda-mcdonald/UwEjM0gDMzYzN1gzM4ITN0IzM20yR",
-                "https://www.usphonebook.com/david-sharpe/UMDO4MzNyQTM5YDMxUDN3gTOzEzR"
-            };
+        {
+            "https://www.usphonebook.com/john-mcdonald/U3YTM3cTN0gTMxcTN3MTM2kTM50yR",
+            "https://www.usphonebook.com/john-mcdonald/UzYDMwUzNzkzM3kDN4QjMyUzNx0yR",
+            "https://www.usphonebook.com/linda-mcdonald/UwEjM0gDMzYzN1gzM4ITN0IzM20yR",
+            "https://www.usphonebook.com/david-sharpe/UMDO4MzNyQTM5YDMxUDN3gTOzEzR"
+        };
 
             try
             {
                 // Start the scraping process with the seed URLs
                 await scraper.StartScraping(seedUrls);
+
+                // Attempt to bypass Cloudflare for a specific URL
+                WebClient client = null;
+                while (client == null)
+                {
+                    Console.WriteLine("Trying to bypass Cloudflare...");
+                    client = CloudflareEvader.CreateBypassedWebClient("https://www.usphonebook.com/john-mcdonald/U3YTM3cTN0gTMxcTN3MTM2kTM50yR");
+                }
+                Console.WriteLine("Solved! We're clear to go");
+
+                // Perform HTTP requests using the bypassed WebClient
+                Console.WriteLine(client.DownloadString("https://www.usphonebook.com/john-mcdonald/U3YTM3cTN0gTMxcTN3MTM2kTM50yR"));
             }
             catch (Exception e)
             {
