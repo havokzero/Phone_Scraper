@@ -3,6 +3,8 @@ using OpenQA.Selenium.Chrome;
 using Newtonsoft.Json;
 using OpenQA.Selenium.DevTools;
 using System.Net.Http;
+using Phone_Scraper.Utility.Phone_Scraper.Utility;
+
 
 
 namespace Phone_Scraper
@@ -35,12 +37,19 @@ namespace Phone_Scraper
                 string userAgentsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Utility", "user_agents.json");
 
                 // Load the user agents database using the UserAgents class
-                var userAgentsDb = UserAgents.LoadUserAgents(userAgentsFilePath);
+                var userAgentsDb = UserAgents.LoadUserAgents(UserAgent);
 
-                foreach (var uaInfo in userAgentsDb.UserAgents)
+                if (userAgentsDb != null)
                 {
-                    Console.WriteLine($"OS: {uaInfo.On}, Version: {uaInfo.Ov}, Device Category: {uaInfo.Dc}");
-                    // And so on for other details...
+                    foreach (var uaInfo in userAgentsDb)
+                    {
+                        Console.WriteLine($"OS: {uaInfo.On}, Version: {uaInfo.Ov}, Device Category: {uaInfo.Dc}");
+                        // And so on for other details...
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Failed to load user agents database.");
                 }
 
                 using (var driver = new ChromeDriver(driverPath, options))
@@ -48,7 +57,7 @@ namespace Phone_Scraper
                     // Initialize the scraper with the driver
                     scraper = new Scraper(driver);
                     driver.Navigate().GoToUrl("https://www.usphonebook.com/");
-                    
+
                     // Correct the call to match the updated StartScraping method signature
                     await scraper.StartScraping(cloudEvader: cloudEvader);
 
@@ -79,7 +88,7 @@ namespace Phone_Scraper
             // You can check for an element, text, or any other criteria on https://pixelscan.net/
             return true; // Replace with your actual logic
         }
-        
+
         private static async Task MakeHttpRequest(string requestUri)
         {
             try

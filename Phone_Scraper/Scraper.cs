@@ -12,6 +12,7 @@ using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
 using System.IO;
 using System.Net.Http;
+using OpenQA.Selenium.Firefox;
 
 namespace Phone_Scraper
 {
