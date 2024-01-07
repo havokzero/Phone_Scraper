@@ -9,18 +9,15 @@ using Newtonsoft.Json.Linq;
 public class UserAgentRule
 {
     public string Regex { get; set; }
-    public string OperatingSystemType { get; set; } // ot in JSON
-    public string BrowserName { get; set; } // bn in JSON
-    public string BrowserVersion { get; set; } // bv in JSON
-    public string DeviceCategory { get; set; } // dc in JSON
+    public string Ot { get; set; } // Change to Ot to match JSON
 }
 
 public class UserAgentInfo
 {
     public string Regex { get; set; }
-    public string OperatingSystem { get; set; } // on in JSON
-    public string OperatingSystemVersion { get; set; } // ov in JSON
-    public string DeviceCategory { get; set; } // dc in JSON
+    public string On { get; set; } // Change to On to match JSON
+    public string Ov { get; set; } // Change to Ov to match JSON
+    public string Dc { get; set; } // Change to Dc to match JSON
     public List<UserAgentRule> Rules { get; set; } = new List<UserAgentRule>();
 }
 
@@ -48,11 +45,11 @@ namespace Phone_Scraper.Utility
             foreach (var ua in database.UserAgents)
             {
                 System.Console.WriteLine($"Regex: {ua.Regex}");
-                System.Console.WriteLine($"OS: {ua.OperatingSystem}, Version: {ua.OperatingSystemVersion}, Device Category: {ua.DeviceCategory}");
+                System.Console.WriteLine($"OS: {ua.On}, Version: {ua.Ov}, Device Category: {ua.Dc}");
 
                 foreach (var rule in ua.Rules)
                 {
-                    System.Console.WriteLine($"  Rule Regex: {rule.Regex}, OS Type: {rule.OperatingSystemType}, Browser: {rule.BrowserName}, Version: {rule.BrowserVersion}, Device: {rule.DeviceCategory}");
+                    System.Console.WriteLine($"  Rule Regex: {rule.Regex}, OS Type: {rule.Ot}");
                 }
             }
         }

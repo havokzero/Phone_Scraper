@@ -39,7 +39,7 @@ namespace Phone_Scraper
 
                 foreach (var uaInfo in userAgentsDb.UserAgents)
                 {
-                    Console.WriteLine($"OS: {uaInfo.OperatingSystem}, Regex: {uaInfo.Regex}");
+                    Console.WriteLine($"OS: {uaInfo.On}, Version: {uaInfo.Ov}, Device Category: {uaInfo.Dc}");
                     // And so on for other details...
                 }
 

@@ -11,7 +11,6 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 
 namespace Phone_Scraper
