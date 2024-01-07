@@ -12,7 +12,6 @@ using OpenQA.Selenium.Chrome;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-
 namespace Phone_Scraper
 {
     public class Program
@@ -21,22 +20,30 @@ namespace Phone_Scraper
 
         public static async Task Main(string[] args)
         {
-            Scraper scraper = null; // Declare scraper here
+            // Initialize scraper outside of try block to access it in finally
+            Scraper scraper = null;
 
             try
             {
                 // Set up the Chrome WebDriver path
                 string driverPath = Path.Combine(Directory.GetCurrentDirectory(), "Driver");
-                var driver = new ChromeDriver(driverPath);
+                var options = new ChromeOptions();
+                // options.AddArguments("headless"); // Uncomment if you want Chrome to run headless
+                using (var driver = new ChromeDriver(driverPath, options))
+                {
+                    // Initialize the scraper with the driver
+                    scraper = new Scraper(driver);
 
-                // Initialize the scraper with the driver
-                scraper = new Scraper(driver);
+                    // Load seed URLs from JSON file
+                    var seedUrls = LoadSeedUrls("SeedUrls.json");
 
-                // Load seed URLs from JSON file
-                var seedUrls = LoadSeedUrls("SeedUrls.json");
+                    // Start the scraping process with the seed URLs
+                    await scraper.StartScraping(seedUrls);
 
-                // Start the scraping process with the seed URLs
-                await scraper.StartScraping(seedUrls);
+                    // You might want to add a delay or wait for a user input to observe the browser (for debugging purposes)
+                    Console.WriteLine("Scraping completed. Press any key to exit...");
+                    Console.ReadKey();
+                }
             }
             catch (Exception e)
             {

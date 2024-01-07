@@ -30,6 +30,11 @@ namespace Phone_Scraper
         private HashSet<string> visitedUrls = new HashSet<string>();
         private Queue<string> urlsToCrawl = new Queue<string>();
 
+        public Scraper(IWebDriver webDriver)
+        {
+            driver = webDriver ?? throw new ArgumentNullException(nameof(webDriver));
+            httpClient = new HttpClient();
+        }
 
         // Define your Regex patterns
         private static readonly Regex phoneRegex = new Regex(@"(\+?[1-9][0-9]{0,2}[\s\(\)\-\.\,\/\|]*)?(\(?\d{3}\)?[\s\-\.\,\/\|]*\d{3}[\s\-\.\,\/\|]*\d{4})");
@@ -39,13 +44,7 @@ namespace Phone_Scraper
         private static readonly Regex relativeRegex = new Regex(@"Relatives\s*:\s*(.+?)(?=<\/div>|$)");
         private static readonly Regex associateRegex = new Regex(@"Associates\s*:\s*(.+?)(?=<\/div>|$)");
         private static readonly Regex emailRegex = new Regex(@"^(?!\.)(""([^""\r\\]|\\[""\r\\])*""|([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)@[a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$", RegexOptions.IgnoreCase);
-
-
-        public Scraper(IWebDriver webDriver)
-        {
-            driver = webDriver ?? throw new ArgumentNullException(nameof(webDriver));
-        }
-
+        
         // Method to close or dispose of the WebDriver
         public void CloseDriver()
         {
@@ -140,8 +139,10 @@ namespace Phone_Scraper
             // Load seed URLs and iterate through them
             foreach (var seedUrl in seedUrls)
             {
+                Console.WriteLine($"Now scraping {seedUrl}");
                 urlsToCrawl.Enqueue(seedUrl);
             }
+            string responseContent = null;
 
             while (urlsToCrawl.Count > 0)
             {
@@ -149,68 +150,76 @@ namespace Phone_Scraper
                 if (visitedUrls.Contains(currentUrl)) continue; // Skip the URL if it's been visited
 
                 visitedUrls.Add(currentUrl); // Mark URLs as visited 
+                Console.WriteLine($"Processing: {currentUrl}");
 
-                // Extract firstname, lastname, & Unique ID from current url
                 var urlSegments = new Uri(currentUrl).Segments;
-                if (urlSegments.Length >= 4)
+                string urlToScrape = "";
+
+                // Adjusting URL based on its type (name-based or phone number-based)
+                if (urlSegments.Length >= 4 && !urlSegments[1].StartsWith("NXX-NXX-XXXX"))
                 {
+                    // Handle name-based URLs
                     string firstname = urlSegments[1].Trim('/');
                     string lastname = urlSegments[2].Trim('/');
                     string uniqueid = urlSegments[3].Trim('/');
-
-                    // Generate URL dynamically
                     string baseUrl = "https://www.usphonebook.com/{0}-{1}/{2}";
-                    string url = string.Format(baseUrl, firstname, lastname, uniqueid);
+                    urlToScrape = string.Format(baseUrl, firstname, lastname, uniqueid);
+                }
+                else if (urlSegments.Length >= 2 && urlSegments[1].StartsWith("NXX-NXX-XXXX"))
+                {
+                    // Handle phone number-based URLs
+                    urlToScrape = currentUrl; // The current URL is already the full URL in this case
+                }
 
-                    try
+                try
+                {
+                    // Scrape and Extract new links from the current page
+                    var entry = await Scrape(urlToScrape);
+                    ExtractLinks(urlToScrape); // Ensure ExtractLinks method is properly handling the URLs
+
+                    // Check if Cloudflare challenge is detected
+                    bool isCloudflareChallenge = false;
+
+                    do
                     {
-                        // Use URL variable in the HTTP request or the scraping logic
-                        string responseContent;
-
-                        // Check if Cloudflare challenge is detected
-                        bool isCloudflareChallenge = false;
-
-                        do
+                        // Make the HTTP request using a bypassed WebClient if it's a Cloudflare challenge
+                        if (isCloudflareChallenge)
                         {
-                            // Make the HTTP request using a bypassed WebClient if it's a Cloudflare challenge
-                            if (isCloudflareChallenge)
+                            httpClient = await CloudEvader.CreateBypassedWebClient(urlToScrape);
+                            if (httpClient == null)
                             {
-                                httpClient = await CloudEvader.CreateBypassedWebClient(url);
-                                if (httpClient == null)
-                                {
-                                    Console.WriteLine("Failed to create a bypassed WebClient. Cloudflare might have blocked the request, or there might be an issue with the CloudflareEvader.");
-                                    return;
-                                }
+                                Console.WriteLine("Failed to create a bypassed WebClient. Cloudflare might have blocked the request.");
+                                return;
                             }
-
-                            // Perform the HTTP request
-                            HttpResponseMessage response = await httpClient.GetAsync(url);
-                            responseContent = await response.Content.ReadAsStringAsync();
-
-                            // Check if the response indicates a Cloudflare captcha challenge
-                            isCloudflareChallenge = await CloudEvader.IsCloudflareChallenge(responseContent);
-
-                            if (isCloudflareChallenge)
-                            {
-                                Console.WriteLine("Detected Cloudflare captcha challenge. Retrying with CloudEvader...");
-                                // Implement your retry or bypass strategy here.
-                            }
-                        } while (isCloudflareChallenge);
-
-                        if (!string.IsNullOrEmpty(responseContent))
-                        {
-                            Console.WriteLine(responseContent); // Process responses as they come
                         }
 
-                        // Scrape the current URL and Extract new links from the current page and add them to the queue
-                        await Scrape(currentUrl);
-                        ExtractLinks(currentUrl); // Ensure ExtractLinks method is properly handling the URLs and adding new ones to the queue
-                    }
-                    catch (HttpRequestException ex)
+                        // Perform the HTTP request
+                        HttpResponseMessage response = await httpClient.GetAsync(urlToScrape);
+                        responseContent = await response.Content.ReadAsStringAsync();
+
+                        // Check if the response indicates a Cloudflare captcha challenge
+                        isCloudflareChallenge = await CloudEvader.IsCloudflareChallenge(responseContent);
+
+                        if (isCloudflareChallenge)
+                        {
+                            Console.WriteLine("Detected Cloudflare captcha challenge. Retrying with CloudEvader...");
+                            // Implement your retry or bypass strategy here.
+                        }
+                    } while (isCloudflareChallenge);
+
+                    if (!string.IsNullOrEmpty(responseContent))
                     {
-                        // Handle specific web exceptions or retry logic here if needed
-                        Console.WriteLine($"Failed to access {url}: {ex.Message}");
+                        Console.WriteLine(responseContent); // Process responses as they come
                     }
+
+                    // Scrape the current URL and Extract new links from the current page and add them to the queue
+                    await Scrape(urlToScrape);
+                    ExtractLinks(urlToScrape); // Ensure ExtractLinks method is properly handling the URLs and adding new ones to the queue
+                }
+                catch (HttpRequestException ex)
+                {
+                    // Handle specific web exceptions or retry logic here if needed
+                    Console.WriteLine($"Failed to access {urlToScrape}: {ex.Message}");
                 }
             }
             driver.Quit(); // Ensure this is the desired behavior as this will close the entire browser session
@@ -323,6 +332,7 @@ namespace Phone_Scraper
                 {
                     entry.Email = emailNode.InnerText.Trim();
                 }
+                Console.WriteLine($"Scraped data from {url}");
             }
             catch (Exception e)
             {
