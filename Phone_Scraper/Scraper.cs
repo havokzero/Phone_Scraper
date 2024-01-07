@@ -11,6 +11,7 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 
 namespace Phone_Scraper
@@ -131,7 +132,7 @@ namespace Phone_Scraper
             return seedUrls;
         }
 
-        public async Task StartScraping(IEnumerable<string> seedUrls)
+        public async Task StartScraping(IEnumerable<string> seedUrls, CloudEvader cloudEvader)
         {
             // Initialize httpClient
             httpClient = new HttpClient();
@@ -169,6 +170,9 @@ namespace Phone_Scraper
                 {
                     // Handle phone number-based URLs
                     urlToScrape = currentUrl; // The current URL is already the full URL in this case
+                                              // Click on the link with text "View Details" or similar
+                    var viewDetailsLink = driver.FindElement(By.LinkText("View Details")); // You can use another selector if needed
+                    viewDetailsLink.Click();
                 }
 
                 try
@@ -181,7 +185,7 @@ namespace Phone_Scraper
                     bool isCloudflareChallenge = false;
 
                     do
-                    {
+                    {                        
                         // Make the HTTP request using a bypassed WebClient if it's a Cloudflare challenge
                         if (isCloudflareChallenge)
                         {
@@ -192,13 +196,24 @@ namespace Phone_Scraper
                                 return;
                             }
                         }
-
-                        // Perform the HTTP request
-                        HttpResponseMessage response = await httpClient.GetAsync(urlToScrape);
-                        responseContent = await response.Content.ReadAsStringAsync();
+                        while (isCloudflareChallenge && entry != null);
+                        
+                        // Implement the provided code here
+                        Uri uri;
+                        if (Uri.TryCreate(urlToScrape, UriKind.Absolute, out uri))
+                        {
+                            // URL is valid, proceed with the request
+                            HttpResponseMessage response = await httpClient.GetAsync(uri);
+                            responseContent = await response.Content.ReadAsStringAsync();
+                            // Rest of your code
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Invalid URL: {urlToScrape}");
+                        }
 
                         // Check if the response indicates a Cloudflare captcha challenge
-                        isCloudflareChallenge = await CloudEvader.IsCloudflareChallenge(responseContent);
+                        isCloudflareChallenge = CloudEvader.IsCloudflareChallenge(responseContent);
 
                         if (isCloudflareChallenge)
                         {
@@ -222,28 +237,9 @@ namespace Phone_Scraper
                     Console.WriteLine($"Failed to access {urlToScrape}: {ex.Message}");
                 }
             }
-            driver.Quit(); // Ensure this is the desired behavior as this will close the entire browser session
+         //   driver.Quit(); // Ensure this is the desired behavior as this will close the entire browser session
         }
-
-        // Dummy method to detect Cloudflare's challenge
-        private bool IsCloudflareChallenge(WebException webEx)
-        {
-            // Implement actual logic to detect Cloudflare's challenge page
-            // This could involve checking for specific status codes, page content, etc.
-            if (webEx.Response is HttpWebResponse response)
-            {
-                // Often Cloudflare challenge pages are served with a 503 Service Unavailable
-                if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
-                {
-                    // Further checks can be made here, for instance, parsing the response HTML
-                    // and looking for specific Cloudflare challenge indicators.
-                    // For now, it's a basic check.
-                    return true;
-                }
-            }
-            return false;
-        }
-
+        
         public async Task<PhonebookEntry> Scrape(string url)
         {
             var entry = new PhonebookEntry();

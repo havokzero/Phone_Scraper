@@ -12,11 +12,13 @@ using OpenQA.Selenium.Chrome;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
+
 namespace Phone_Scraper
 {
     public class Program
     {
         private static readonly HttpClient httpClient = new HttpClient();
+        private static CloudEvader cloudEvader;
 
         public static async Task Main(string[] args)
         {
@@ -38,7 +40,7 @@ namespace Phone_Scraper
                     var seedUrls = LoadSeedUrls("SeedUrls.json");
 
                     // Start the scraping process with the seed URLs
-                    await scraper.StartScraping(seedUrls);
+                    await scraper.StartScraping(seedUrls, cloudEvader: cloudEvader);
 
                     // You might want to add a delay or wait for a user input to observe the browser (for debugging purposes)
                     Console.WriteLine("Scraping completed. Press any key to exit...");

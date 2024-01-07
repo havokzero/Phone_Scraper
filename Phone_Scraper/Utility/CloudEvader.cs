@@ -50,13 +50,30 @@ namespace Phone_Scraper.Utility
             }
         }
 
-        public static async Task<bool> IsCloudflareChallenge(string responseContent)
+        public static bool IsCloudflareChallenge(string responseContent, HttpWebResponse response = null)
         {
-            
             try
             {
                 // Check if the response content contains a known Cloudflare challenge element
                 bool isChallenge = responseContent.Contains("captcha-image");
+
+                // Check for specific status codes, page content, or other indicators
+                if (response != null)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
+                    {
+                        // Additional checks can be made here
+                        return true;
+                    }
+
+                    // Check HTTP headers
+                    if (response.Headers["Server"] == "cloudflare" || response.Headers["CF-RAY"] != null)
+                    {
+                        return true;
+                    }
+
+                    // Add more checks based on headers, URL, or other indicators
+                }
 
                 // You can add more checks here based on your specific requirements
 
@@ -67,10 +84,8 @@ namespace Phone_Scraper.Utility
                 // Handle any exceptions here if needed
                 Console.WriteLine($"Error in IsCloudflareChallenge: {ex.Message}");
                 return false; // Return false in case of an exception
-                return responseContent.Contains("captcha-image");
             }
         }
-
 
         private static bool IsChallengePage(string htmlContent)
         {
