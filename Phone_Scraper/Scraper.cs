@@ -44,14 +44,7 @@ namespace Phone_Scraper
         private static readonly Regex relativeRegex = new Regex(@"Relatives\s*:\s*(.+?)(?=<\/div>|$)");
         private static readonly Regex associateRegex = new Regex(@"Associates\s*:\s*(.+?)(?=<\/div>|$)");
         private static readonly Regex emailRegex = new Regex(@"^(?!\.)(""([^""\r\\]|\\[""\r\\])*""|([-a-z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)*)(?<!\.)@[a-z0-9][\w\.-]*[a-z0-9]\.[a-z][a-z\.]*[a-z]$", RegexOptions.IgnoreCase);
-        
-        // Method to close or dispose of the WebDriver
-        public void CloseDriver()
-        {
-            // If the driver is not null, close and dispose of it
-            driver?.Quit();
-        }
-
+                    
         private async Task<string> MakeHttpRequest(string requestUri)
         {
             try
@@ -142,7 +135,8 @@ namespace Phone_Scraper
             int currentUserAgentIndex = 0; // Initialize the index
 
             // Load user agents from user_agents.json file
-            List<string> userAgents = LoadUserAgents();
+            //List<string> userAgents = LoadUserAgents();
+            List<UserAgentInfo> userAgents = LoadUserAgents();
 
             // Load seed URLs and iterate through them
             foreach (var seedUrl in seedUrlsToScrape)
@@ -155,7 +149,8 @@ namespace Phone_Scraper
             while (urlsToCrawl.Count > 0)
             {
                 // Rotate user agents
-                string userAgent = userAgents[currentUserAgentIndex];
+                UserAgentInfo userAgentInfo = userAgents[currentUserAgentIndex];
+                string userAgent = userAgentInfo.Regex; // Use the correct property from UserAgentInfo
                 httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
                 currentUserAgentIndex = (currentUserAgentIndex + 1) % userAgents.Count;
 
@@ -281,7 +276,7 @@ namespace Phone_Scraper
             }
         }
 
-        private List<string> LoadUserAgents()
+        private List<UserAgentInfo> LoadUserAgents()
         {
             try
             {
@@ -291,26 +286,20 @@ namespace Phone_Scraper
                 if (File.Exists(userAgentsPath))
                 {
                     string jsonContent = File.ReadAllText(userAgentsPath);
-                    var userAgentsObjects = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent);
-                    var userAgents = new List<string>();
-
-                    foreach (var uaObject in userAgentsObjects)
-                    {
-                        userAgents.Add(uaObject.regex.Value);  // Assuming you want the 'regex' field as the user agent string
-                    }
+                    var userAgents = JsonConvert.DeserializeObject<List<UserAgentInfo>>(jsonContent);
 
                     return userAgents;
                 }
                 else
                 {
                     Console.WriteLine("user_agents.json file not found in the Utility folder.");
-                    return new List<string>();
+                    return new List<UserAgentInfo>();
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading user agents: {ex.Message}");
-                return new List<string>();
+                return new List<UserAgentInfo>();
             }
         }
 
