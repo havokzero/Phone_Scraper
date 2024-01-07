@@ -3,9 +3,6 @@ using OpenQA.Selenium.Chrome;
 using Newtonsoft.Json;
 using OpenQA.Selenium.DevTools;
 using System.Net.Http;
-using Phone_Scraper.Utility.Phone_Scraper.Utility;
-
-
 
 namespace Phone_Scraper
 {
@@ -14,8 +11,7 @@ namespace Phone_Scraper
         private static readonly HttpClient httpClient = new HttpClient();
         private static CloudEvader cloudEvader;
         private static UserAgent userAgent;
-
-
+        
         public static async Task Main(string[] args)
         {
 

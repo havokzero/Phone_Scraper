@@ -153,7 +153,7 @@ namespace Phone_Scraper
             {
                 // Rotate user agents
                 Phone_Scraper.Utility.UserAgentInfo userAgentInfo = userAgents[currentUserAgentIndex];
-                string userAgent = userAgentInfo.Regex; // Use the correct property from UserAgentInfo
+                string userAgent = userAgents[currentUserAgentIndex].UserAgentString; // Use the correct property from UserAgentInfo
                 httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
                 currentUserAgentIndex = (currentUserAgentIndex + 1) % userAgents.Count;
 
