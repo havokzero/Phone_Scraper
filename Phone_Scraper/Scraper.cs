@@ -132,7 +132,7 @@ namespace Phone_Scraper
             return seedUrls;
         }
 
-        public async Task StartScraping(IEnumerable<string> seedUrls, CloudEvader cloudEvader)
+        public async Task StartScraping(IEnumerable<string> seedUrls) //,CloudEvader cloudEvader
         {
             // Initialize httpClient
             httpClient = new HttpClient();
