@@ -19,7 +19,7 @@ namespace Phone_Scraper
 
     public interface IWebsiteScraper
     {
-        Task StartScraping(IEnumerable<string> seedUrls);
+        Task StartScraping(IEnumerable<string> seedUrls, CloudEvader cloudEvader);
         Task<PhonebookEntry> Scrape(string url);
     }
 
@@ -132,7 +132,7 @@ namespace Phone_Scraper
             return seedUrls;
         }
 
-        public async Task StartScraping(IEnumerable<string> seedUrls) //,CloudEvader cloudEvader
+        public async Task StartScraping(IEnumerable<string> seedUrls, CloudEvader cloudEvader) //,CloudEvader cloudEvader
         {
             // Initialize httpClient
             httpClient = new HttpClient();
