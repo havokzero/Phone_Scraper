@@ -1,18 +1,8 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using Phone_Scraper;
-using System.Net.Http;
-using OpenQA.Selenium;
-using System.Threading;
-using Newtonsoft.Json.Linq;
-using Phone_Scraper.Utility;
-using System.Threading.Tasks;
+﻿using Phone_Scraper.Utility;
 using OpenQA.Selenium.Chrome;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using OpenQA.Selenium.DevTools;
-using Phone_Scraper;
+using System.Net.Http;
 
 
 namespace Phone_Scraper
@@ -21,6 +11,7 @@ namespace Phone_Scraper
     {
         private static readonly HttpClient httpClient = new HttpClient();
         private static CloudEvader cloudEvader;
+        private static UserAgent
 
 
         public static async Task Main(string[] args)
@@ -47,8 +38,8 @@ namespace Phone_Scraper
                 string jsonContent = File.ReadAllText(userAgentsFilePath);
                 var userAgentsDb = JsonConvert.DeserializeObject<UserAgents>(jsonContent);
 
-                foreach(var uaInfo in userAgentsDb.UserAgents)
-        {
+                foreach (var uaInfo in userAgentsDb.UserAgents)
+                {
                     Console.WriteLine($"OS: {uaInfo.OperatingSystem}, Regex: {uaInfo.Regex}");
                     // And so on for other details...
                 }

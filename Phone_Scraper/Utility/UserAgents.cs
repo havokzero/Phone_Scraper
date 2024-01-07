@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using Phone_Scraper.Utility;
+using System.Net.Http;
 
 public class UserAgentRule
 {
