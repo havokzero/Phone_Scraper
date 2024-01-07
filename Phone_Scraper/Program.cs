@@ -37,7 +37,7 @@ namespace Phone_Scraper
                 string userAgentsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Utility", "user_agents.json");
 
                 // Load the user agents database using the UserAgents class
-                var userAgentsDb = UserAgents.LoadUserAgents(UserAgent);
+                var userAgentsDb = UserAgents.UserAgentInfos;
 
                 if (userAgentsDb != null)
                 {
