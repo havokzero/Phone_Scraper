@@ -148,7 +148,11 @@ namespace Phone_Scraper
             while (urlsToCrawl.Count > 0)
             {
                 string currentUrl = urlsToCrawl.Dequeue();
-                if (visitedUrls.Contains(currentUrl)) continue; // Skip the URL if it's been visited
+               // if (visitedUrls.Contains(currentUrl)) continue; // Skip the URL if it's been visited
+               if (!IsValidUrl(currentUrl))
+                {
+                    continue;   // skip invalid url and move to the next one 
+                }
 
                 visitedUrls.Add(currentUrl); // Mark URLs as visited 
                 Console.WriteLine($"Processing: {currentUrl}");
@@ -237,9 +241,22 @@ namespace Phone_Scraper
                     Console.WriteLine($"Failed to access {urlToScrape}: {ex.Message}");
                 }
             }
-         //   driver.Quit(); // Ensure this is the desired behavior as this will close the entire browser session
+            driver.Quit(); // Ensure this is the desired behavior as this will close the entire browser session
         }
-        
+
+        public bool IsValidUrl(string url)
+        {
+            if (Uri.TryCreate(url, UriKind.Absolute, out Uri validUri))
+            {
+                return true;
+            }
+            else
+            {
+                Console.WriteLine($"Invalid URL: {url}");
+                return false;
+            }
+        }
+
         public async Task<PhonebookEntry> Scrape(string url)
         {
             var entry = new PhonebookEntry();

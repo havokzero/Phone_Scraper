@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Leaf.xNet;
+using HttpStatusCode = System.Net.HttpStatusCode;
 
 namespace Phone_Scraper.Utility
 {
@@ -54,6 +55,12 @@ namespace Phone_Scraper.Utility
         {
             try
             {
+                // Check if the responseContent parameter is null or empty
+                if (string.IsNullOrEmpty(responseContent))
+                {
+                    return false;
+                }
+
                 // Check if the response content contains a known Cloudflare challenge element
                 bool isChallenge = responseContent.Contains("captcha-image");
 
@@ -61,13 +68,13 @@ namespace Phone_Scraper.Utility
                 if (response != null)
                 {
                     // Check if the response status code indicates a Cloudflare challenge (e.g., 503 Service Unavailable)
-                    if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
+                    if (response.StatusCode == HttpStatusCode.ServiceUnavailable)
                     {
                         return true;
                     }
 
                     // Check HTTP headers
-                    if (response.Headers["Server"] == "Cloudflare" || response.Headers["CF-RAY"] != null)
+                    if (response.Headers != null && (response.Headers["Server"] == "cloudflare" || response.Headers["CF-RAY"] != null))
                     {
                         return true;
                     }
@@ -80,7 +87,7 @@ namespace Phone_Scraper.Utility
                     }
 
                     // Example: Check for patterns in the response content
-                    if (responseContent.Contains("Cloudflare-specific-text"))
+                    if (responseContent.Contains("cloudflare-specific-text"))
                     {
                         return true;
                     }

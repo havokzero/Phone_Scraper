@@ -17,11 +17,18 @@ namespace Phone_Scraper
 {
     public class Program
     {
+        
+
         private static readonly HttpClient httpClient = new HttpClient();
         private static CloudEvader cloudEvader;
 
         public static async Task Main(string[] args)
         {
+            int bufferWidth = Math.Max(Console.WindowWidth, 120);
+            int bufferHeight = Math.Min(1000, short.MaxValue - 1); // Ensure buffer height is within valid bounds
+
+            Console.SetBufferSize(bufferWidth, bufferHeight);
+
             // Initialize scraper outside of try block to access it in finally
             Scraper scraper = null;
 
