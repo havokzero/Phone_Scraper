@@ -287,11 +287,19 @@ namespace Phone_Scraper
             try
             {
                 string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string userAgentsPath = Path.Combine(baseDirectory, "Utility", "user_agents.json"); // Dynamic path
+                string userAgentsPath = Path.Combine(baseDirectory, "Utility", "user_agents.json");
+
                 if (File.Exists(userAgentsPath))
                 {
                     string jsonContent = File.ReadAllText(userAgentsPath);
-                    var userAgents = JsonConvert.DeserializeObject<List<string>>(jsonContent);
+                    var userAgentsObjects = JsonConvert.DeserializeObject<List<dynamic>>(jsonContent);
+                    var userAgents = new List<string>();
+
+                    foreach (var uaObject in userAgentsObjects)
+                    {
+                        userAgents.Add(uaObject.regex.Value);  // Assuming you want the 'regex' field as the user agent string
+                    }
+
                     return userAgents;
                 }
                 else
