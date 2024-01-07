@@ -60,19 +60,30 @@ namespace Phone_Scraper.Utility
                 // Check for specific status codes, page content, or other indicators
                 if (response != null)
                 {
+                    // Check if the response status code indicates a Cloudflare challenge (e.g., 503 Service Unavailable)
                     if (response.StatusCode == System.Net.HttpStatusCode.ServiceUnavailable)
                     {
-                        // Additional checks can be made here
                         return true;
                     }
 
                     // Check HTTP headers
-                    if (response.Headers["Server"] == "cloudflare" || response.Headers["CF-RAY"] != null)
+                    if (response.Headers["Server"] == "Cloudflare" || response.Headers["CF-RAY"] != null)
                     {
                         return true;
                     }
 
                     // Add more checks based on headers, URL, or other indicators
+                    // Example: Check for specific response headers or patterns in the content
+                    if (response.Headers["SomeHeader"] == "SomeValue")
+                    {
+                        return true;
+                    }
+
+                    // Example: Check for patterns in the response content
+                    if (responseContent.Contains("Cloudflare-specific-text"))
+                    {
+                        return true;
+                    }
                 }
 
                 // You can add more checks here based on your specific requirements
