@@ -13,6 +13,8 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Net.Http;
 using OpenQA.Selenium.Firefox;
+using Phone_Scraper.Utility.Phone_Scraper.Utility;
+using Phone_Scraper.Utility;
 
 namespace Phone_Scraper
 {
@@ -25,7 +27,7 @@ namespace Phone_Scraper
 
     public class Scraper : IWebsiteScraper
     {
-
+        //private List<Phone_Scraper.Utility.UserAgentInfo> LoadUserAgents();
         private HttpClient httpClient;
         private IWebDriver driver;
         private HashSet<string> visitedUrls = new HashSet<string>();
@@ -137,7 +139,7 @@ namespace Phone_Scraper
 
             // Load user agents from user_agents.json file
             //List<string> userAgents = LoadUserAgents();
-            List<UserAgentInfo> userAgents = LoadUserAgents();
+            List<Phone_Scraper.Utility.UserAgentInfo> userAgents = LoadUserAgents();
 
             // Load seed URLs and iterate through them
             foreach (var seedUrl in seedUrlsToScrape)
@@ -150,7 +152,7 @@ namespace Phone_Scraper
             while (urlsToCrawl.Count > 0)
             {
                 // Rotate user agents
-                UserAgentInfo userAgentInfo = userAgents[currentUserAgentIndex];
+                Phone_Scraper.Utility.UserAgentInfo userAgentInfo = userAgents[currentUserAgentIndex];
                 string userAgent = userAgentInfo.Regex; // Use the correct property from UserAgentInfo
                 httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
                 currentUserAgentIndex = (currentUserAgentIndex + 1) % userAgents.Count;
@@ -277,30 +279,19 @@ namespace Phone_Scraper
             }
         }
 
-        private List<UserAgentInfo> LoadUserAgents()
+        private List<Phone_Scraper.Utility.UserAgentInfo> LoadUserAgents()
         {
             try
             {
-                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                string userAgentsPath = Path.Combine(baseDirectory, "Utility", "user_agents.json");
+                // Retrieve the user agents from the UserAgents class
+                List<Phone_Scraper.Utility.UserAgentInfo> userAgents = UserAgents.UserAgentInfos;
 
-                if (File.Exists(userAgentsPath))
-                {
-                    string jsonContent = File.ReadAllText(userAgentsPath);
-                    var userAgents = JsonConvert.DeserializeObject<List<UserAgentInfo>>(jsonContent);
-
-                    return userAgents;
-                }
-                else
-                {
-                    Console.WriteLine("user_agents.json file not found in the Utility folder.");
-                    return new List<UserAgentInfo>();
-                }
+                return userAgents;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading user agents: {ex.Message}");
-                return new List<UserAgentInfo>();
+                return new List<Phone_Scraper.Utility.UserAgentInfo>();
             }
         }
 
