@@ -17,8 +17,6 @@ namespace Phone_Scraper
 {
     public class Program
     {
-        
-
         private static readonly HttpClient httpClient = new HttpClient();
         private static CloudEvader cloudEvader;
 
@@ -26,7 +24,6 @@ namespace Phone_Scraper
         {
             int bufferWidth = Math.Max(Console.WindowWidth, 120);
             int bufferHeight = Math.Min(1000, short.MaxValue - 1); // Ensure buffer height is within valid bounds
-
             Console.SetBufferSize(bufferWidth, bufferHeight);
 
             // Initialize scraper outside of try block to access it in finally
@@ -42,12 +39,12 @@ namespace Phone_Scraper
                 {
                     // Initialize the scraper with the driver
                     scraper = new Scraper(driver);
+                    driver.Navigate().GoToUrl("https://www.usphonebook.com/");
 
-                    // Load seed URLs from JSON file
-                    var seedUrls = LoadSeedUrls("SeedUrls.json");
+                    // ... existing code ...
 
-                    // Start the scraping process with the seed URLs
-                    await scraper.StartScraping(seedUrls, cloudEvader: cloudEvader);
+                    // Correct the call to match the updated StartScraping method signature
+                    await scraper.StartScraping(cloudEvader: cloudEvader);
 
                     // You might want to add a delay or wait for a user input to observe the browser (for debugging purposes)
                     Console.WriteLine("Scraping completed. Press any key to exit...");
@@ -69,24 +66,14 @@ namespace Phone_Scraper
             }
         }
 
-        private static List<string> LoadSeedUrls(string filePath)
+        private static bool IsConfirmationReceived()
         {
-            try
-            {
-                // Read the file as a string
-                string jsonText = File.ReadAllText(filePath);
-
-                // Parse the string into a JSON object and convert to list
-                var seedUrls = JsonConvert.DeserializeObject<List<string>>(jsonText);
-                return seedUrls ?? new List<string>(); // Return empty list if null
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error loading seed URLs from {filePath}: {e.Message}");
-                return new List<string>(); // Return empty list on error
-            }
+            // Implement your logic to check for confirmation here
+            // Return true when confirmation is received, false otherwise
+            // You can check for an element, text, or any other criteria on https://pixelscan.net/
+            return true; // Replace with your actual logic
         }
-
+        
         private static async Task MakeHttpRequest(string requestUri)
         {
             try

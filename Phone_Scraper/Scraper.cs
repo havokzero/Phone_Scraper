@@ -19,8 +19,8 @@ namespace Phone_Scraper
 
     public interface IWebsiteScraper
     {
-        Task StartScraping(IEnumerable<string> seedUrls, CloudEvader cloudEvader);
-        Task<PhonebookEntry> Scrape(string url);
+        //Task StartScraping(IEnumerable<string> seedUrls, CloudEvader cloudEvader);
+        //Task<PhonebookEntry> Scrape(string url);
     }
 
     public class Scraper : IWebsiteScraper
@@ -132,13 +132,21 @@ namespace Phone_Scraper
             return seedUrls;
         }
 
-        public async Task StartScraping(IEnumerable<string> seedUrls, CloudEvader cloudEvader) //,CloudEvader cloudEvader
+        public async Task StartScraping(CloudEvader cloudEvader) //,CloudEvader cloudEvader) //,CloudEvader cloudEvader causes weird error
         {
             // Initialize httpClient
             httpClient = new HttpClient();
 
+            // Load seed URLs from seedurls.json file
+            IEnumerable<string> seedUrlsToScrape = LoadSeedUrls();
+
+            int currentUserAgentIndex = 0; // Initialize the index
+
+            // Load user agents from user_agents.json file
+            List<string> userAgents = LoadUserAgents();
+
             // Load seed URLs and iterate through them
-            foreach (var seedUrl in seedUrls)
+            foreach (var seedUrl in seedUrlsToScrape)
             {
                 Console.WriteLine($"Now scraping {seedUrl}");
                 urlsToCrawl.Enqueue(seedUrl);
@@ -147,9 +155,14 @@ namespace Phone_Scraper
 
             while (urlsToCrawl.Count > 0)
             {
+                // Rotate user agents
+                string userAgent = userAgents[currentUserAgentIndex];
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
+                currentUserAgentIndex = (currentUserAgentIndex + 1) % userAgents.Count;
+
                 string currentUrl = urlsToCrawl.Dequeue();
-               // if (visitedUrls.Contains(currentUrl)) continue; // Skip the URL if it's been visited
-               if (!IsValidUrl(currentUrl))
+                // if (visitedUrls.Contains(currentUrl)) continue; // Skip the URL if it's been visited
+                if (!IsValidUrl(currentUrl))
                 {
                     continue;   // skip invalid url and move to the next one 
                 }
@@ -242,6 +255,56 @@ namespace Phone_Scraper
                 }
             }
             driver.Quit(); // Ensure this is the desired behavior as this will close the entire browser session
+        }
+
+        private IEnumerable<string> LoadSeedUrls()
+        {
+            try
+            {
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string seedUrlsPath = Path.Combine(baseDirectory, "Utility", "SeedUrls.json"); // Dynamic path
+                if (File.Exists(seedUrlsPath))
+                {
+                    string jsonContent = File.ReadAllText(seedUrlsPath);
+                    var seedUrls = JsonConvert.DeserializeObject<IEnumerable<string>>(jsonContent);
+                    return seedUrls;
+                }
+                else
+                {
+                    Console.WriteLine("SeedUrls.json file not found in the Utility folder.");
+                    return Enumerable.Empty<string>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading seed URLs: {ex.Message}");
+                return Enumerable.Empty<string>();
+            }
+        }
+
+        private List<string> LoadUserAgents()
+        {
+            try
+            {
+                string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+                string userAgentsPath = Path.Combine(baseDirectory, "Utility", "user_agents.json"); // Dynamic path
+                if (File.Exists(userAgentsPath))
+                {
+                    string jsonContent = File.ReadAllText(userAgentsPath);
+                    var userAgents = JsonConvert.DeserializeObject<List<string>>(jsonContent);
+                    return userAgents;
+                }
+                else
+                {
+                    Console.WriteLine("user_agents.json file not found in the Utility folder.");
+                    return new List<string>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading user agents: {ex.Message}");
+                return new List<string>();
+            }
         }
 
         public bool IsValidUrl(string url)

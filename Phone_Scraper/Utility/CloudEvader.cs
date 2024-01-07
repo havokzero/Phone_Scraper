@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Leaf.xNet;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium;
 using HttpStatusCode = System.Net.HttpStatusCode;
 
 namespace Phone_Scraper.Utility
@@ -189,8 +191,43 @@ namespace Phone_Scraper.Utility
 
         // Rest of the cookie handling and utility methods would go here
         // GetAllCookiesFromHeader, ConvertCookieHeaderToArrayList, ConvertCookieArraysToCookieCollection, etc.
+
+
+        public static bool EvadeCloudflareSecurityChallenge(string url)
+        {
+            var options = new ChromeOptions();
+            options.AddArgument("--start-maximized");
+            IWebDriver driver = new ChromeDriver(options);
+
+            try
+            {
+                driver.Navigate().GoToUrl(url);
+
+                // Wait for the Cloudflare security challenge to appear (adjust the wait time as needed)
+                Thread.Sleep(TimeSpan.FromSeconds(10)); // Wait for 10 seconds (you can adjust this)
+
+                // Find the checkbox element and click it
+                IWebElement checkbox = driver.FindElement(By.XPath("/html/body/div/div/div[1]/div/label/input"));
+                checkbox.Click();
+
+                // Wait for confirmation (adjust the wait time as needed)
+                Thread.Sleep(TimeSpan.FromSeconds(10)); // Wait for 10 seconds (you can adjust this)
+
+                // Check if the confirmation is received (you can add your logic here)
+                // For example, you can check if a specific element is visible on the page after confirmation
+
+                // Return true if confirmation is received, otherwise return false
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false; // Return false on error or if confirmation is not received
+            }
+            finally
+            {
+                driver.Quit();
+            }
+        }
     }
 }
-
-
-    
