@@ -1,336 +1,396 @@
 [
   {
-    "regex": "!Windows NT ([.0-9]+)!i",
-    "on": "Windows",
-    "ov": "$1",
-    "dc": "Desktop",
-    "rules": [
+    "Regex": "!Windows NT ([.0-9]+)!i",
+    "On": "Windows",
+    "Ov": "$1",
+    "Dc": "Desktop",
+    "Rules": [
       {
-        "regex": "!Windows NT 5.0!",
-        "ot": "Windows 2000"
+        "Regex": "!Windows NT 5.0!",
+        "Ot": "Windows 2000"
       },
       {
-        "regex": "!Windows NT 5.1!",
-        "ot": "Windows XP"
+        "Regex": "!Windows NT 5.1!",
+        "Ot": "Windows XP"
       },
       {
-        "regex": "!Windows NT 5.2!",
-        "ot": "Windows Server 2003"
+        "Regex": "!Windows NT 5.2!",
+        "Ot": "Windows Server 2003"
       },
       {
-        "regex": "!Windows NT 6.0!",
-        "ot": "Windows Vista"
+        "Regex": "!Windows NT 6.0!",
+        "Ot": "Windows Vista"
       },
       {
-        "regex": "!Windows NT 6.1!",
-        "ot": "Windows 7"
+        "Regex": "!Windows NT 6.1!",
+        "Ot": "Windows 7"
       },
       {
-        "regex": "!Windows NT 6.2!",
-        "ot": "Windows 8"
+        "Regex": "!Windows NT 6.2!",
+        "Ot": "Windows 8"
       },
       {
-        "regex": "!Windows NT 6.3!",
-        "ot": "Windows 8.1"
+        "Regex": "!Windows NT 6.3!",
+        "Ot": "Windows 8.1"
       },
       {
-        "regex": "!Windows NT 10.[0-9]+!",
-        "ot": "Windows 10"
+        "Regex": "!Windows NT 10.[0-9]+!",
+        "Ot": "Windows 10"
       }
     ]
   },
   {
-    "regex": "!OS X ([0-9]+)[_.]([0-9]+)!i",
-    "on": "Macintosh",
-    "ov": "$1.$2",
-    "dc": "Desktop",
-    "rules": [
+    "Regex": "!OS X ([0-9]+)[_.]([0-9]+)!i",
+    "On": "Macintosh",
+    "Ov": "$1.$2",
+    "Dc": "Desktop",
+    "Rules": [
       {
-        "regex": "!OS X 10[_.]5!",
-        "ot": "OS X 10.5 Leopard"
+        "Regex": "!OS X 10[_.]5!",
+        "Ot": "OS X 10.5 Leopard"
       },
       {
-        "regex": "!OS X 10[_.]6!",
-        "ot": "OS X 10.6 Snow Leopard"
+        "Regex": "!OS X 10[_.]6!",
+        "Ot": "OS X 10.6 Snow Leopard"
       },
       {
-        "regex": "!OS X 10[_.]7!",
-        "ot": "OS X 10.7 Lion"
+        "Regex": "!OS X 10[_.]7!",
+        "Ot": "OS X 10.7 Lion"
       },
       {
-        "regex": "!OS X 10[_.]8!",
-        "ot": "OS X 10.8 Mountain Lion"
+        "Regex": "!OS X 10[_.]8!",
+        "Ot": "OS X 10.8 Mountain Lion"
       },
       {
-        "regex": "!OS X 10[_.]9!",
-        "ot": "OS X 10.9 Mavericks"
+        "Regex": "!OS X 10[_.]9!",
+        "Ot": "OS X 10.9 Mavericks"
       },
       {
-        "regex": "!OS X 10[_.]10!",
-        "ot": "OS X 10.10 Yosemite"
+        "Regex": "!OS X 10[_.]10!",
+        "Ot": "OS X 10.10 Yosemite"
       },
       {
-        "regex": "!OS X 10[_.]11!",
-        "ot": "OS X 10.11 El Capitan"
+        "Regex": "!OS X 10[_.]11!",
+        "Ot": "OS X 10.11 El Capitan"
       }
     ]
   },
   {
-    "regex": "!X11|Linux!i",
-    "on": "Linux",
-    "dc": "Desktop"
+    "Regex": "!X11|Linux!i",
+    "On": "Linux",
+    "Dc": "Desktop"
   },
   {
-    "regex": "!MSIE ([.0-9]+)!i",
-    "bn": "Internet Explorer",
-    "bv": "$1"
+    "Regex": "!MSIE ([.0-9]+)!i",
+    "Bn": "Internet Explorer",
+    "Bv": "$1"
   },
   {
-    "regex": "!Trident/[.0-9]+;.+rv:([.0-9]+)!i",
-    "bn": "Internet Explorer",
-    "bv": "$1"
+    "Regex": "!Trident/[.0-9]+;.+rv:([.0-9]+)!i",
+    "Bn": "Internet Explorer",
+    "Bv": "$1"
   },
   {
-    "regex": "!Firefox/([.0-9]+)!i",
-    "bn": "Firefox",
-    "bv": "$1"
+    "Regex": "!Firefox/([.0-9]+)!i",
+    "Bn": "Firefox",
+    "Bv": "$1"
   },
   {
-    "regex": "!Chrome/([.0-9]+)!i",
-    "bn": "Chrome",
-    "bv": "$1"
+    "Regex": "!Chrome/([.0-9]+)!i",
+    "Bn": "Chrome",
+    "Bv": "$1"
   },
   {
-    "regex": "!Version/([.0-9]+) Safari/[.0-9]+!i",
-    "bn": "Safari",
-    "bv": "$1"
+    "Regex": "!Version/([.0-9]+) Safari/[.0-9]+!i",
+    "Bn": "Safari",
+    "Bv": "$1"
   },
   {
-    "regex": "!Edge/([.0-9]+)!i",
-    "bn": "Edge",
-    "bv": "$1"
+    "Regex": "!Edge/([.0-9]+)!i",
+    "Bn": "Edge",
+    "Bv": "$1"
   },
   {
-    "regex": "!OPR/([.0-9]+)!i",
-    "bn": "Opera",
-    "bv": "$1"
+    "Regex": "!OPR/([.0-9]+)!i",
+    "Bn": "Opera",
+    "Bv": "$1"
   },
   {
-    "regex": "!YaBrowser/([.0-9]+)!i",
-    "bn": "Yandex",
-    "bv": "$1"
+    "Regex": "!YaBrowser/([.0-9]+)!i",
+    "Bn": "Yandex",
+    "Bv": "$1"
   },
   {
-    "regex": "!Android ([1456789][0-9]?[.0-9]*)!i",
-    "on": "Android",
-    "ov": "$1",
-    "dc": "Tablet",
-    "bn": "",
-    "bv": "",
-    "rules": [
+    "Regex": "!Android ([1456789][0-9]?[.0-9]*)!i",
+    "On": "Android",
+    "Ov": "$1",
+    "Dc": "Tablet",
+    "Bn": "",
+    "Bv": "",
+    "Rules": [
       {
-        "regex": "~Chrome/([.0-9]+)~",
-        "bn": "Chrome",
-        "bv": "$1"
+        "Regex": "~Chrome/([.0-9]+)~",
+        "Bn": "Chrome",
+        "Bv": "$1"
       },
       {
-        "regex": "~Version/([.0-9]+)~i",
-        "bn": "Android Browser",
-        "bv": "$1"
+        "Regex": "~Version/([.0-9]+)~i",
+        "Bn": "Android Browser",
+        "Bv": "$1"
       },
       {
-        "regex": "~SamsungBrowser/([.0-9]+)~i",
-        "bn": "Samsung Browser",
-        "bv": "$1"
+        "Regex": "~SamsungBrowser/([.0-9]+)~i",
+        "Bn": "Samsung Browser",
+        "Bv": "$1"
       },
       {
-        "regex": "~Firefox/([.0-9]+)~i",
-        "bn": "Firefox",
-        "bv": "$1"
+        "Regex": "~Firefox/([.0-9]+)~i",
+        "Bn": "Firefox",
+        "Bv": "$1"
       },
       {
-        "regex": "~OPR/([.0-9]+)~i",
-        "bn": "Opera",
-        "bv": "$1"
+        "Regex": "~OPR/([.0-9]+)~i",
+        "Bn": "Opera",
+        "Bv": "$1"
       },
       {
-        "regex": "~Mobile~i",
-        "dc": "Mobile"
+        "Regex": "~Mobile~i",
+        "Dc": "Mobile"
       }
     ]
   },
   {
-    "regex": "!Android (3[.0-9]+)!i",
-    "on": "Android",
-    "ov": "$1",
-    "dc": "Tablet",
-    "rules": [
+    "Regex": "!Android (3[.0-9]+)!i",
+    "On": "Android",
+    "Ov": "$1",
+    "Dc": "Tablet",
+    "Rules": [
       {
-        "regex": "~Version/([.0-9]+)~i",
-        "bn": "Android Browser",
-        "bv": "$1"
+        "Regex": "~Version/([.0-9]+)~i",
+        "Bn": "Android Browser",
+        "Bv": "$1"
       },
       {
-        "regex": "~Chrome/([.0-9]+)~i",
-        "bn": "Chrome",
-        "bv": "$1"
+        "Regex": "~Chrome/([.0-9]+)~i",
+        "Bn": "Chrome",
+        "Bv": "$1"
       }
     ]
   },
   {
-    "regex": "!Android (2[.0-9]+)!i",
-    "on": "Android",
-    "ov": "$1",
-    "dc": "Mobile",
-    "rules": [
+    "Regex": "!Android (2[.0-9]+)!i",
+    "On": "Android",
+    "Ov": "$1",
+    "Dc": "Mobile",
+    "Rules": [
       {
-        "regex": "~Version/([.0-9]+)~i",
-        "bn": "Android Browser",
-        "bv": "$1"
+        "Regex": "~Version/([.0-9]+)~i",
+        "Bn": "Android Browser",
+        "Bv": "$1"
       },
       {
-        "regex": "~Chrome/([.0-9]+)~i",
-        "bn": "Chrome",
-        "bv": "$1"
+        "Regex": "~Chrome/([.0-9]+)~i",
+        "Bn": "Chrome",
+        "Bv": "$1"
       }
     ]
   },
   {
-    "regex": "!(?:iPad|iPod|iPhone).+OS ([0-9]+)_([0-9]+)!i",
-    "on": "iOS",
-    "ov": "$1.$2",
-    "rules": [
+    "Regex": "!(?:iPad|iPod|iPhone).+OS ([0-9]+)_([0-9]+)!i",
+    "On": "iOS",
+    "Ov": "$1.$2",
+    "Rules": [
       {
-        "regex": "!Version/([.0-9]+).+Safari/[.0-9]+!i",
-        "bn": "Safari",
-        "bv": "$1"
+        "Regex": "!Version/([.0-9]+).+Safari/[.0-9]+!i",
+        "Bn": "Safari",
+        "Bv": "$1"
       },
       {
-        "regex": "!CriOS/([.0-9]+).+Safari/[.0-9]+!i",
-        "bn": "Chrome",
-        "bv": "$1"
+        "Regex": "!CriOS/([.0-9]+).+Safari/[.0-9]+!i",
+        "Bn": "Chrome",
+        "Bv": "$1"
       },
       {
-        "regex": "!FxiOS/([.0-9]+).+Safari/[.0-9]+!i",
-        "bn": "Firefox",
-        "bv": "$1"
+        "Regex": "!FxiOS/([.0-9]+).+Safari/[.0-9]+!i",
+        "Bn": "Firefox",
+        "Bv": "$1"
       },
       {
-        "regex": "!iPhone|iPod!",
-        "dc": "Mobile"
+        "Regex": "!iPhone|iPod!",
+        "Dc": "Mobile"
       },
       {
-        "regex": "!iPad!",
-        "dc": "Tablet"
+        "Regex": "!iPad!",
+        "Dc": "Tablet"
       }
     ]
   },
   {
-    "regex": "!Windows Phone (?:OS )?([.0-9]+)!i",
-    "on": "Windows Phone",
-    "ov": "$1",
-    "dc": "Mobile"
+    "Regex": "!Windows Phone (?:OS )?([.0-9]+)!i",
+    "On": "Windows Phone",
+    "Ov": "$1",
+    "Dc": "Mobile"
   },
   {
-    "regex": "!google\\.com/bot!",
-    "bot": "Google",
-    "dc": "Desktop",
-    "rules": [
+    "Regex": "!google\\.com/bot!",
+    "Bot": "Google",
+    "Dc": "Desktop",
+    "Rules": [
       {
-        "regex": "!Googlebot-Mobile!",
-        "dc": "Mobile"
+        "Regex": "!Googlebot-Mobile!",
+        "Dc": "Mobile"
       }
     ]
   },
   {
-    "regex": "!bing\\.com/bingbot!",
-    "bot": "Bing",
-    "dc": "Desktop",
-    "rules": [
+    "Regex": "!bing\\.com/bingbot!",
+    "Bot": "Bing",
+    "Dc": "Desktop",
+    "Rules": [
       {
-        "regex": "!Phone!",
-        "dc": "Mobile"
+        "Regex": "!Phone!",
+        "Dc": "Mobile"
       }
     ]
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
-    "ua": "Sample User Agent 1"
+    "Regex": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 1"
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/100.0.0.0 Safari/537.36",
-    "ua": "Sample User Agent 2"
+    "Regex": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 2"
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/100.0.0.0 Safari/537.36",
-    "ua": "Sample User Agent 3"
+    "Regex": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Edge/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 3"
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Opera/100.0.0.0 Safari/537.36",
-    "ua": "Sample User Agent 4"
+    "Regex": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Opera/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 4"
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
-    "ua": "Sample User Agent 5"
+    "Regex": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Ua": "Sample User Agent 5"
   },
   {
-    "regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
-    "ua": "Sample User Agent 6"
+    "Regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 6"
   },
   {
-    "regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/100.0.0.0 Safari/537.36",
-    "ua": "Sample User Agent 7"
+    "Regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 7"
   },
   {
-    "regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Edge/100.0.0.0 Safari/537.36",
-    "ua": "Sample User Agent 8"
+    "Regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Edge/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 8"
   },
   {
-    "regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Opera/100.0.0.0 Safari/537.36",
-    "ua": "Sample User Agent 9"
+    "Regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Opera/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 9"
   },
   {
-    "regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7; rv:100.0) Gecko/20100101 Firefox/100.0",
-    "ua": "Sample User Agent 10"
+    "Regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Ua": "Sample User Agent 10"
   },
   {
-    "regex": "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Mobile Safari/537.36",
-    "ua": "Sample User Agent 11"
+    "Regex": "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Mobile Safari/537.36",
+    "Ua": "Sample User Agent 11"
   },
   {
-    "regex": "Mozilla/5.0 (Linux; Android 10; SM-G960U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Mobile Safari/537.36",
-    "ua": "Sample User Agent 12"
+    "Regex": "Mozilla/5.0 (Linux; Android 10; SM-G960U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Mobile Safari/537.36",
+    "Ua": "Sample User Agent 12"
   },
   {
-    "regex": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Mobile/15E148 Safari/604.1",
-    "ua": "Sample User Agent 13"
+    "Regex": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Mobile/15E148 Safari/604.1",
+    "Ua": "Sample User Agent 13"
   },
   {
-    "regex": "Mozilla/5.0 (iPad; CPU OS 15_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Mobile/15E148 Safari/604.1",
-    "ua": "Sample User Agent 14"
+    "Regex": "Mozilla/5.0 (iPad; CPU OS 15_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Mobile/15E148 Safari/604.1",
+    "Ua": "Sample User Agent 14"
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
-    "ua": "Sample User Agent 15"
+    "Regex": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 15"
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:100.0) Gecko/20100101 Firefox/100.0",
-    "ua": "Sample User Agent 16"
+    "Regex": "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Ua": "Sample User Agent 16"
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko",
-    "ua": "Sample User Agent 17"
+    "Regex": "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; AS; rv:11.0) like Gecko",
+    "Ua": "Sample User Agent 17"
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 5.1; rv:100.0) Gecko/20100101 Firefox/100.0",
-    "ua": "Sample User Agent 18"
+    "Regex": "Mozilla/5.0 (Windows NT 5.1; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Ua": "Sample User Agent 18"
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 5.1; rv:100.0) Gecko/20100101 Firefox/100.0.0",
-    "ua": "Sample User Agent 19"
+    "Regex": "Mozilla/5.0 (Windows NT 5.1; rv:100.0) Gecko/20100101 Firefox/100.0.0",
+    "Ua": "Sample User Agent 19"
   },
   {
-    "regex": "Mozilla/5.0 (Windows NT 5.1; U; rv:100.0) Gecko/20100101 Firefox/100.0",
-    "ua": "Sample User Agent 20"
+    "Regex": "Mozilla/5.0 (Windows NT 5.1; U; rv:100.0) Gecko/20100101 Firefox/100.0",
+    "Ua": "Sample User Agent 20"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT 5.1; U; rv:100.0) like Gecko",
+    "Ua": "Sample User Agent 21"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 22"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 OPR/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 23"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 YaBrowser/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 24"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Edge/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 25"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.0.0 Opera/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 26"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 27"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Edge/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 28"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) OPR/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 29"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) YaBrowser/100.0.0.0 Safari/537.36",
+    "Ua": "Sample User Agent 30"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X <Version>) AppleWebKit/<WebKitVersion> (KHTML, like Gecko) Version/<SafariVersion> Safari/<SafariVersion>",
+    "Ua": "Safari (macOS)"
+  },
+  {
+    "Regex": "Mozilla/5.0 (iPhone; CPU iPhone OS <Version> like Mac OS X) AppleWebKit/<WebKitVersion> (KHTML, like Gecko) Version/<SafariVersion> Mobile/<MobileVersion> Safari/<SafariVersion>",
+    "Ua": "Safari (iOS Mobile Browser)"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT <Version>; WOW64) AppleWebKit/<WebKitVersion> (KHTML, like Gecko) Chrome/<ChromeVersion> Safari/<SafariVersion> Edg/<EdgeVersion>",
+    "Ua": "Microsoft Edge (Legacy)"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Windows NT <Version>; WOW64; Trident/7.0; AS; rv:<Version>) like Gecko",
+    "Ua": "Internet Explorer (Legacy)"
+  },
+  {
+    "Regex": "Mozilla/5.0 (Macintosh; Intel Mac OS X <Version>) AppleWebKit/<WebKitVersion> (KHTML, like Gecko) Firefox/<FirefoxVersion>",
+    "Ua": "Mozilla Firefox (macOS)"
   }
 ]

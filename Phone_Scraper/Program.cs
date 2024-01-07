@@ -39,15 +39,16 @@ namespace Phone_Scraper
                 string driverPath = Path.Combine(Directory.GetCurrentDirectory(), "Driver");
                 var options = new ChromeOptions();
                 // options.AddArguments("headless"); // Uncomment if you want Chrome to run headless
-                
+
                 // Assuming you've set up the path to your user_agents.json file
                 string userAgentsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Utility", "user_agents.json");
 
-                // Load the user agents database using the UserAgents class
-                var userAgentsDb = UserAgents.LoadUserAgents(userAgentsFilePath);
+                // Load the user agents database using JSON deserialization
+                string jsonContent = File.ReadAllText(userAgentsFilePath);
+                var userAgentsDb = JsonConvert.DeserializeObject<UserAgents>(jsonContent);
 
-                foreach (var uaInfo in userAgentsDb.UserAgents)
-                {
+                foreach(var uaInfo in userAgentsDb.UserAgents)
+        {
                     Console.WriteLine($"OS: {uaInfo.OperatingSystem}, Regex: {uaInfo.Regex}");
                     // And so on for other details...
                 }
