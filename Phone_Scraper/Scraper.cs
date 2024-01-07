@@ -12,8 +12,9 @@ using System.Security.Cryptography.X509Certificates;
 using Newtonsoft.Json;
 using System.IO;
 using System.Net.Http;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Firefox;
-using Phone_Scraper.Utility.Phone_Scraper.Utility;
+using OpenQA.Selenium.Chrome;
 using Phone_Scraper.Utility;
 
 namespace Phone_Scraper
@@ -139,7 +140,7 @@ namespace Phone_Scraper
 
             // Load user agents from user_agents.json file
             //List<string> userAgents = LoadUserAgents();
-            List<Phone_Scraper.Utility.UserAgentInfo> userAgents = LoadUserAgents();
+            List<string> userAgents = UserAgents.UserAgentStrings;
 
             // Load seed URLs and iterate through them
             foreach (var seedUrl in seedUrlsToScrape)
@@ -152,12 +153,12 @@ namespace Phone_Scraper
             while (urlsToCrawl.Count > 0)
             {
                 // Rotate user agents
-                Phone_Scraper.Utility.UserAgentInfo userAgentInfo = userAgents[currentUserAgentIndex];
-                string userAgent = userAgents[currentUserAgentIndex].UserAgentString; // Use the correct property from UserAgentInfo
-                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent);
+                string userAgent = userAgents[currentUserAgentIndex];
+                httpClient.DefaultRequestHeaders.UserAgent.ParseAdd(userAgent); // Apply the user agent
                 currentUserAgentIndex = (currentUserAgentIndex + 1) % userAgents.Count;
 
                 string currentUrl = urlsToCrawl.Dequeue();
+
                 // if (visitedUrls.Contains(currentUrl)) continue; // Skip the URL if it's been visited
                 if (!IsValidUrl(currentUrl))
                 {
@@ -279,19 +280,19 @@ namespace Phone_Scraper
             }
         }
 
-        private List<Phone_Scraper.Utility.UserAgentInfo> LoadUserAgents()
+        private List<string> LoadUserAgents()
         {
             try
             {
                 // Retrieve the user agents from the UserAgents class
-                List<Phone_Scraper.Utility.UserAgentInfo> userAgents = UserAgents.UserAgentInfos;
+                List<string> userAgents = UserAgents.UserAgentStrings;
 
                 return userAgents;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading user agents: {ex.Message}");
-                return new List<Phone_Scraper.Utility.UserAgentInfo>();
+                return new List<string>();  // Return an empty list of strings, not UserAgentInfo objects
             }
         }
 
