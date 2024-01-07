@@ -11,7 +11,7 @@ namespace Phone_Scraper
     {
         private static readonly HttpClient httpClient = new HttpClient();
         private static CloudEvader cloudEvader;
-        private static UserAgent
+        private static UserAgent userAgent;
 
 
         public static async Task Main(string[] args)
@@ -34,9 +34,8 @@ namespace Phone_Scraper
                 // Assuming you've set up the path to your user_agents.json file
                 string userAgentsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Utility", "user_agents.json");
 
-                // Load the user agents database using JSON deserialization
-                string jsonContent = File.ReadAllText(userAgentsFilePath);
-                var userAgentsDb = JsonConvert.DeserializeObject<UserAgents>(jsonContent);
+                // Load the user agents database using the UserAgents class
+                var userAgentsDb = UserAgents.LoadUserAgents(userAgentsFilePath);
 
                 foreach (var uaInfo in userAgentsDb.UserAgents)
                 {
@@ -49,9 +48,7 @@ namespace Phone_Scraper
                     // Initialize the scraper with the driver
                     scraper = new Scraper(driver);
                     driver.Navigate().GoToUrl("https://www.usphonebook.com/");
-
-                    // ... existing code ...
-
+                    
                     // Correct the call to match the updated StartScraping method signature
                     await scraper.StartScraping(cloudEvader: cloudEvader);
 
@@ -70,7 +67,7 @@ namespace Phone_Scraper
                 // Ensure WebDriver is closed properly
                 if (scraper != null)
                 {
-                   // scraper.CloseDriver();
+                    // scraper.CloseDriver();
                 }
             }
         }
