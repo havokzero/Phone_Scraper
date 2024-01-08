@@ -90,8 +90,11 @@ namespace Phone_Scraper
         {
             try
             {
-                // Navigate to the page
-                driver.Navigate().GoToUrl(pageUrl);
+                // Encode the pageUrl to handle spaces or special characters
+                string encodedUrl = Uri.EscapeUriString(pageUrl);
+
+                // Navigate to the encoded URL
+                driver.Navigate().GoToUrl(encodedUrl);
 
                 // Find all anchor tags on the page
                 var links = driver.FindElements(By.TagName("a"));
@@ -145,8 +148,11 @@ namespace Phone_Scraper
             // Load seed URLs and iterate through them
             foreach (var seedUrl in seedUrlsToScrape)
             {
-                Console.WriteLine($"Now scraping {seedUrl}");
-                urlsToCrawl.Enqueue(seedUrl);
+                // Encode the seedUrl to handle spaces or special characters
+                string encodedUrl = Uri.EscapeUriString(seedUrl);
+
+                Console.WriteLine($"Now scraping {encodedUrl}");
+                urlsToCrawl.Enqueue(encodedUrl);
             }
             string responseContent = null;
 
@@ -252,7 +258,7 @@ namespace Phone_Scraper
                     Console.WriteLine($"Failed to access {urlToScrape}: {ex.Message}");
                 }
             }
-            driver.Quit(); // Ensure this is the desired behavior as this will close the entire browser session
+          //  driver.Quit(); // Ensure this is the desired behavior as this will close the entire browser session
         }
 
         private IEnumerable<string> LoadSeedUrls()
@@ -281,20 +287,20 @@ namespace Phone_Scraper
         }
 
         private List<string> LoadUserAgents()
-        {
-            try
-            {
-                // Retrieve the user agents from the UserAgents class
-                List<string> userAgents = UserAgents.UserAgentStrings;
+{
+    try
+    {
+        // Retrieve the user agents from the UserAgents class
+        List<string> userAgents = UserAgents.UserAgentStrings;
 
-                return userAgents;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading user agents: {ex.Message}");
-                return new List<string>();  // Return an empty list of strings, not UserAgentInfo objects
-            }
-        }
+        return userAgents;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error loading user agents: {ex.Message}");
+        return new List<string>();  // Return an empty list of strings, not UserAgentInfo objects
+    }
+}
 
         public bool IsValidUrl(string url)
         {
@@ -406,30 +412,7 @@ namespace Phone_Scraper
 
             return entry;
         }
-
-        private void ExtractLinks()
-        {
-            try
-            {
-                var links = driver.FindElements(By.XPath("//a[contains(@href, '/')]"));
-                foreach (var link in links)
-                {
-                    string href = link.GetAttribute("href");
-                    if (href.Length > 2000) continue; // Skip overly long URLs
-
-                    string absoluteUrl = new Uri(new Uri("https://www.usphonebook.com"), href).AbsoluteUri;
-                    if (absoluteUrl.StartsWith("https://www.usphonebook.com") && !visitedUrls.Contains(absoluteUrl))
-                    {
-                        urlsToCrawl.Enqueue(absoluteUrl);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error occurred while extracting links: {e.Message}");
-            }
-        }
-
+        
         private async Task ExtractAdditionalDetailsAsync(string pageSource, PhonebookEntry entry)
         {
             // Extracting additional phone numbers
